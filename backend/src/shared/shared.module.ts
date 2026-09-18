@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
+import { CorrelationIdMiddleware } from './correlation-id/correlation-id.middleware';
 import { BusinessExceptionFilter } from './filters/business-exception.filter';
 
 @Module({
@@ -10,4 +11,8 @@ import { BusinessExceptionFilter } from './filters/business-exception.filter';
     },
   ],
 })
-export class SharedModule {}
+export class SharedModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+  }
+}

@@ -1,5 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { CorrelationIdStore } from '../correlation-id/correlation-id.store';
 import { BusinessException } from '../exceptions/business.exception';
 
 @Catch(BusinessException)
@@ -13,6 +14,7 @@ export class BusinessExceptionFilter implements ExceptionFilter {
       statusCode: exception.statusCode,
       message: exception.message,
       path: request.url,
+      correlationId: CorrelationIdStore.getCorrelationId(),
       timestamp: new Date().toISOString(),
     });
   }
