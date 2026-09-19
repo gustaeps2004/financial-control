@@ -1,20 +1,24 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { buildDatabaseConnectionOptions } from './shared/database/database-connection.config';
 import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST ?? 'localhost',
-      port: Number(process.env.DB_PORT ?? 5432),
-      username: process.env.DB_USERNAME ?? 'postgres',
-      password: process.env.DB_PASSWORD ?? 'postgres',
-      database: process.env.DB_NAME ?? 'financial_control',
-      autoLoadEntities: true,
-      synchronize: false,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        ...buildDatabaseConnectionOptions({
+          DB_HOST: configService.get<string>('DB_HOST'),
+          DB_PORT: configService.get<string>('DB_PORT'),
+          DB_USERNAME: configService.get<string>('DB_USERNAME'),
+          DB_PASSWORD: configService.get<string>('DB_PASSWORD'),
+          DB_NAME: configService.get<string>('DB_NAME'),
+        }),
+        autoLoadEntities: true,
+      }),
     }),
     SharedModule,
   ],
