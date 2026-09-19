@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "modular-design-principles": {
+      "source": "tech-leads-club/agent-skills",
+      "sourceType": "github",
+      "skillPath": "packages/skills-catalog/skills/(architecture)/modular-design-principles/SKILL.md",
+      "computedHash": "5ba1b1b1ffa1da4bfb658413b397151bdfeec92d257d4f7d0a5520acbc5a0da3"
+    },
     "nestjs-best-practices": {
       "source": "kadajett/agent-nestjs-skills",
       "sourceType": "github",
