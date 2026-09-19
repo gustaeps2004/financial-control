@@ -25,7 +25,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const message =
       exception instanceof HttpException
-        ? exception.message
+        ? this.extractMessage(exception)
         : 'Internal server error';
 
     const correlationId = CorrelationIdStore.getCorrelationId();
@@ -42,5 +42,25 @@ export class AllExceptionsFilter implements ExceptionFilter {
       correlationId,
       timestamp: new Date().toISOString(),
     });
+  }
+
+  // ValidationPipe's BadRequestException carries the real per-field errors in
+  // getResponse().message (string[]); exception.message is just the generic
+  // "Bad Request Exception" fallback because Nest's own HttpException only
+  // promotes response.message to .message when it is a plain string.
+  private extractMessage(exception: HttpException): string | string[] {
+    const body = exception.getResponse();
+    if (typeof body === 'string') {
+      return body;
+    }
+
+    if (typeof body === 'object' && body !== null && 'message' in body) {
+      const { message } = body;
+      if (typeof message === 'string' || Array.isArray(message)) {
+        return message;
+      }
+    }
+
+    return exception.message;
   }
 }

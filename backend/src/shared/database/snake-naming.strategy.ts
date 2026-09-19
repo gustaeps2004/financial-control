@@ -19,4 +19,12 @@ export class SnakeNamingStrategy
       (customName ?? snakeCase(propertyName))
     );
   }
+
+  // Without this override, @JoinColumn()'s default name stays camelCase
+  // (e.g. "userId") while every plain @Column() resolves to snake_case
+  // (e.g. "user_id") via columnName() above — same logical FK column, two
+  // different physical names, and TypeORM fails to reconcile them.
+  joinColumnName(relationName: string, referencedColumnName: string): string {
+    return snakeCase(`${relationName}_${referencedColumnName}`);
+  }
 }

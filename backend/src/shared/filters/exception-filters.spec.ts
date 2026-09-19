@@ -1,4 +1,9 @@
-import { Controller, Get, INestApplication } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  INestApplication,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -7,7 +12,7 @@ import { SharedModule } from '../shared.module';
 
 interface ErrorResponseBody {
   statusCode: number;
-  message: string;
+  message: string | string[];
   correlationId?: string;
 }
 
@@ -27,6 +32,16 @@ class TestController {
   @Get('unexpected-error')
   throwUnexpected(): never {
     throw new Error('Boom');
+  }
+
+  @Get('validation-error')
+  throwValidation(): never {
+    // Mirrors ValidationPipe's default exceptionFactory: BadRequestException
+    // constructed with a string[] of per-field errors.
+    throw new BadRequestException([
+      'username must be longer than or equal to 3 characters',
+      'email must be an email',
+    ]);
   }
 }
 
@@ -66,6 +81,20 @@ describe('Global exception filters', () => {
 
     expect(response.status).toBe(500);
     expect(body.message).toBe('Internal server error');
+    expect(body).toHaveProperty('correlationId');
+  });
+
+  it('surfaces per-field validation errors instead of the generic "Bad Request Exception" message', async () => {
+    const response = await request(app.getHttpServer()).get(
+      '/test/validation-error',
+    );
+    const body = response.body as ErrorResponseBody;
+
+    expect(response.status).toBe(400);
+    expect(body.message).toEqual([
+      'username must be longer than or equal to 3 characters',
+      'email must be an email',
+    ]);
     expect(body).toHaveProperty('correlationId');
   });
 });
