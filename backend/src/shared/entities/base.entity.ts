@@ -8,14 +8,14 @@ import { BaseEntityConfig } from './config/base-entity.config';
 
 export abstract class EntityBase {
   @PrimaryGeneratedColumn('uuid', BaseEntityConfig.id)
-  id: string;
+  id!: string;
 
   @CreateDateColumn(BaseEntityConfig.createdAt)
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn(BaseEntityConfig.updatedAt)
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn(BaseEntityConfig.deletedAt)
-  deletedAt: Date | null;
+  deletedAt: Date | null = null;
 }

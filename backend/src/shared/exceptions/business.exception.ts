@@ -1,4 +1,4 @@
-export class BusinessException extends Error {
+export abstract class BusinessException extends Error {
   constructor(
     message: string,
     public readonly statusCode: number,

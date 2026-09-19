@@ -11,11 +11,17 @@ interface ErrorResponseBody {
   correlationId?: string;
 }
 
+class TestBusinessException extends BusinessException {
+  constructor(message: string, statusCode: number) {
+    super(message, statusCode);
+  }
+}
+
 @Controller('test')
 class TestController {
   @Get('business-error')
   throwBusiness(): never {
-    throw new BusinessException('Something went wrong', 422);
+    throw new TestBusinessException('Something went wrong', 422);
   }
 
   @Get('unexpected-error')
