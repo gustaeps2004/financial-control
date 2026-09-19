@@ -13,6 +13,12 @@
       "skillPath": "skills/nestjs-best-practices/SKILL.md",
       "computedHash": "29c326e77d1462ed9526996acae5da0cf4003146982abc8c67378f5dbad6b181"
     },
+    "secure-code-guardian": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "skillPath": "skills/secure-code-guardian/SKILL.md",
+      "computedHash": "f140b4582963766a374047e417792459f19f7964dd7aa5b76c5ca3cadcd6fdf9"
+    },
     "typeorm": {
       "source": "mindrally/skills",
       "sourceType": "github",
