@@ -5,7 +5,6 @@ export class User extends BaseDomainEntity {
   username!: string;
   email!: string;
   emailConfirmed: boolean = false;
-  // Stored as plain text until password hashing ships; OAuth-created users have none.
   password: string | null = null;
   provider: AuthProvider = AuthProvider.LOCAL;
   providerId: string | null = null;

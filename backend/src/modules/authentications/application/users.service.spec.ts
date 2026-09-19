@@ -3,6 +3,7 @@ import { User } from '../domain/entities/user.entity';
 import { AuthProvider } from '../domain/enums/auth-provider.enum';
 import { EmailAlreadyRegisteredException } from '../domain/exceptions/email-already-registered.exception';
 import { UsernameAlreadyRegisteredException } from '../domain/exceptions/username-already-registered.exception';
+import { PasswordHasher } from '../domain/ports/password-hasher';
 import { UsersRepository } from '../domain/repositories/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
@@ -10,6 +11,7 @@ import { UsersService } from './users.service';
 describe('UsersService', () => {
   let service: UsersService;
   let repository: jest.Mocked<UsersRepository>;
+  let passwordHasher: jest.Mocked<PasswordHasher>;
 
   const dto: CreateUserDto = {
     email: 'jdoe@example.com',
@@ -17,6 +19,7 @@ describe('UsersService', () => {
     acceptedPrivacyPolicy: true,
     acceptedTermsOfUse: true,
   };
+  const hashedPassword = 'argon2id$hashed-password';
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,11 +34,19 @@ describe('UsersService', () => {
             save: jest.fn(),
           },
         },
+        {
+          provide: PasswordHasher,
+          useValue: {
+            hash: jest.fn(),
+            verify: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get(UsersService);
     repository = module.get(UsersRepository);
+    passwordHasher = module.get(PasswordHasher);
   });
 
   afterEach(() => {
@@ -43,19 +54,22 @@ describe('UsersService', () => {
   });
 
   describe('register', () => {
-    it('creates and persists a local user', async () => {
+    it('creates and persists a local user with the hashed password', async () => {
       repository.findByEmail.mockResolvedValue(null);
       repository.findByUsername.mockResolvedValue(null);
+      passwordHasher.hash.mockResolvedValue(hashedPassword);
       repository.save.mockImplementation((user) => Promise.resolve(user));
 
       const result = await service.register(dto);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(passwordHasher.hash).toHaveBeenCalledWith(dto.password);
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
       expect(repository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           username: dto.email,
           email: dto.email,
-          password: dto.password,
+          password: hashedPassword,
           provider: AuthProvider.LOCAL,
           privacyPolicyAccepted: true,
           termsOfUseAccepted: true,
