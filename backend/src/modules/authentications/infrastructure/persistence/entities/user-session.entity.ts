@@ -15,19 +15,6 @@ export class UserSessionEntity extends EntityBase {
   @Column({ type: 'uuid' })
   userId!: string;
 
-  @Index({ unique: true })
-  @Column({ type: 'varchar', length: 255 })
-  token!: string;
-
-  @Column({ type: 'varchar', length: 45, nullable: true })
-  ipAddress: string | null = null;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  userAgent: string | null = null;
-
   @Column({ type: 'timestamptz' })
   expiresAt!: Date;
-
-  @Column({ type: 'timestamptz', nullable: true })
-  revokedAt: Date | null = null;
 }

@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserSession } from '../domain/entities/user-session.entity';
 import { User } from '../domain/entities/user.entity';
 import { InvalidCredentialsException } from '../domain/exceptions/invalid-credentials.exception';
-import { SessionNotFoundException } from '../domain/exceptions/session-not-found.exception';
 import { PasswordHasher } from '../domain/ports/password-hasher';
+import { TokenGenerator } from '../domain/ports/token-generator';
 import { SessionsRepository } from '../domain/repositories/sessions.repository';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { SessionsService } from './sessions.service';
@@ -14,12 +13,17 @@ describe('SessionsService', () => {
   let sessionsRepository: jest.Mocked<SessionsRepository>;
   let usersService: jest.Mocked<UsersService>;
   let passwordHasher: jest.Mocked<PasswordHasher>;
+  let tokenGenerator: jest.Mocked<TokenGenerator>;
 
   const dto: CreateSessionDto = {
     email: 'jdoe@example.com',
     password: 'super-secret',
   };
   const hashedPassword = 'argon2id$hashed-password';
+  const generatedToken = {
+    accessToken: 'signed-jwt',
+    expiresAt: new Date('2026-01-01T00:00:00.000Z'),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -28,7 +32,6 @@ describe('SessionsService', () => {
         {
           provide: SessionsRepository,
           useValue: {
-            findActiveByToken: jest.fn(),
             save: jest.fn(),
           },
         },
@@ -45,6 +48,12 @@ describe('SessionsService', () => {
             verify: jest.fn(),
           },
         },
+        {
+          provide: TokenGenerator,
+          useValue: {
+            generate: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -52,6 +61,7 @@ describe('SessionsService', () => {
     sessionsRepository = module.get(SessionsRepository);
     usersService = module.get(UsersService);
     passwordHasher = module.get(PasswordHasher);
+    tokenGenerator = module.get(TokenGenerator);
   });
 
   afterEach(() => {
@@ -59,10 +69,15 @@ describe('SessionsService', () => {
   });
 
   describe('login', () => {
-    it('creates a session when credentials match', async () => {
-      const user = { id: '1', password: hashedPassword } as User;
+    it('returns a signed JWT and records an audit-only session when credentials match', async () => {
+      const user = {
+        id: '1',
+        email: dto.email,
+        password: hashedPassword,
+      } as User;
       usersService.findByEmail.mockResolvedValue(user);
       passwordHasher.verify.mockResolvedValue(true);
+      tokenGenerator.generate.mockResolvedValue(generatedToken);
       sessionsRepository.save.mockImplementation((session) =>
         Promise.resolve(session),
       );
@@ -75,10 +90,20 @@ describe('SessionsService', () => {
         dto.password,
       );
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(tokenGenerator.generate).toHaveBeenCalledWith({
+        sub: user.id,
+        email: user.email,
+      });
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
       expect(sessionsRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: user.id }),
+        expect.objectContaining({
+          userId: user.id,
+          expiresAt: generatedToken.expiresAt,
+        }),
       );
-      expect(result.userId).toBe(user.id);
+      const savedSession = sessionsRepository.save.mock.calls[0][0];
+      expect(savedSession).not.toHaveProperty('token');
+      expect(result).toEqual(generatedToken);
     });
 
     it('throws when the user does not exist', async () => {
@@ -87,6 +112,8 @@ describe('SessionsService', () => {
       await expect(service.login(dto)).rejects.toThrow(
         InvalidCredentialsException,
       );
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(tokenGenerator.generate).not.toHaveBeenCalled();
     });
 
     it('throws when the user has no local password (OAuth account)', async () => {
@@ -112,28 +139,8 @@ describe('SessionsService', () => {
       await expect(service.login(dto)).rejects.toThrow(
         InvalidCredentialsException,
       );
-    });
-  });
-
-  describe('revoke', () => {
-    it('marks the active session as revoked', async () => {
-      const session = { revokedAt: null } as UserSession;
-      sessionsRepository.findActiveByToken.mockResolvedValue(session);
-      sessionsRepository.save.mockResolvedValue(session);
-
-      await service.revoke('a-token');
-
-      expect(session.revokedAt).toBeInstanceOf(Date);
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
-      expect(sessionsRepository.save).toHaveBeenCalledWith(session);
-    });
-
-    it('throws when there is no active session for the token', async () => {
-      sessionsRepository.findActiveByToken.mockResolvedValue(null);
-
-      await expect(service.revoke('missing-token')).rejects.toThrow(
-        SessionNotFoundException,
-      );
+      expect(tokenGenerator.generate).not.toHaveBeenCalled();
     });
   });
 });

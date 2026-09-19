@@ -9,11 +9,7 @@ export class UserSessionMapper {
       updatedAt: entity.updatedAt,
       deletedAt: entity.deletedAt,
       userId: entity.userId,
-      token: entity.token,
-      ipAddress: entity.ipAddress,
-      userAgent: entity.userAgent,
       expiresAt: entity.expiresAt,
-      revokedAt: entity.revokedAt,
     });
   }
 
@@ -25,11 +21,7 @@ export class UserSessionMapper {
       id: domain.id,
       deletedAt: domain.deletedAt,
       userId: domain.userId,
-      token: domain.token,
-      ipAddress: domain.ipAddress,
-      userAgent: domain.userAgent,
       expiresAt: domain.expiresAt,
-      revokedAt: domain.revokedAt,
     });
   }
 }

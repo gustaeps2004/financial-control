@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { UserSession } from '../domain/entities/user-session.entity';
 import { InvalidCredentialsException } from '../domain/exceptions/invalid-credentials.exception';
-import { SessionNotFoundException } from '../domain/exceptions/session-not-found.exception';
 import { PasswordHasher } from '../domain/ports/password-hasher';
+import { TokenGenerator } from '../domain/ports/token-generator';
 import { SessionsRepository } from '../domain/repositories/sessions.repository';
-import { SESSION_TTL_MS } from './constants/session.constants';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UsersService } from './users.service';
 
-export interface LoginContext {
-  ipAddress?: string | null;
-  userAgent?: string | null;
+export interface LoginResult {
+  accessToken: string;
+  expiresAt: Date;
 }
 
 @Injectable()
@@ -20,14 +18,14 @@ export class SessionsService {
     private readonly sessionsRepository: SessionsRepository,
     private readonly usersService: UsersService,
     private readonly passwordHasher: PasswordHasher,
+    private readonly tokenGenerator: TokenGenerator,
   ) {}
 
-  async login(
-    dto: CreateSessionDto,
-    context: LoginContext = {},
-  ): Promise<UserSession> {
+  async login(dto: CreateSessionDto): Promise<LoginResult> {
     const user = await this.usersService.findByEmail(dto.email);
 
+    // user.password is null for OAuth-created accounts, which have no
+    // local password to verify against.
     if (
       !user ||
       !user.password ||
@@ -36,24 +34,19 @@ export class SessionsService {
       throw new InvalidCredentialsException();
     }
 
-    const session: UserSession = Object.assign(new UserSession(), {
-      userId: user.id!,
-      token: randomUUID(),
-      ipAddress: context.ipAddress ?? null,
-      userAgent: context.userAgent ?? null,
-      expiresAt: new Date(Date.now() + SESSION_TTL_MS),
+    const { accessToken, expiresAt } = await this.tokenGenerator.generate({
+      // A persisted user (found by email) is always assigned an id.
+      sub: user.id!,
+      email: user.email,
     });
 
-    return this.sessionsRepository.save(session);
-  }
+    const session: UserSession = Object.assign(new UserSession(), {
+      userId: user.id!,
+      expiresAt,
+    });
 
-  async revoke(token: string): Promise<void> {
-    const session = await this.sessionsRepository.findActiveByToken(token);
-    if (!session) {
-      throw new SessionNotFoundException();
-    }
-
-    session.revokedAt = new Date();
     await this.sessionsRepository.save(session);
+
+    return { accessToken, expiresAt };
   }
 }
