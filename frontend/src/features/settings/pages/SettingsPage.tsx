@@ -8,9 +8,10 @@ import { DangerZoneCard } from "../components/DangerZoneCard";
 
 export function SettingsPage() {
   return (
-    <div>
+    <div className="mx-auto max-w-275">
       <h3 className="mb-4.5">Settings</h3>
-      <div className="grid max-w-[900px] grid-cols-[repeat(auto-fit,minmax(280px,1fr))] items-start gap-3.5">
+
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start gap-3.5">
         <AccountCard />
         <PreferencesCard />
         <Card className="gap-3 p-4">
@@ -19,6 +20,9 @@ export function SettingsPage() {
         </Card>
         <CardsSummaryCard />
         <RecurringSummaryCard />
+      </div>
+
+      <div className="mt-6">
         <DangerZoneCard />
       </div>
     </div>

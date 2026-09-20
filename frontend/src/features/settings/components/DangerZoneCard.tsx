@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { WarningCircle } from "@phosphor-icons/react";
 import { Card, CardKicker } from "@/shared/ui/Card";
 import { Button } from "@/shared/ui/Button";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -21,15 +22,18 @@ export function DangerZoneCard() {
   }
 
   return (
-    <Card className="gap-2.5 p-4">
-      <CardKicker>Danger zone</CardKicker>
-      <p className="m-0 text-[13px] opacity-80">
-        Deleting your account removes every transaction, card and category stored on
-        this device. This cannot be undone.
-      </p>
-      <Button variant="secondary" className="self-start" onClick={handleDelete}>
-        Delete account
-      </Button>
+    <Card className="flex-row items-start gap-3.5 border border-danger/35 bg-danger/[0.07] p-4">
+      <WarningCircle size={20} weight="fill" className="mt-0.5 flex-none text-danger" />
+      <div className="flex flex-col gap-2.5">
+        <CardKicker className="text-danger">Danger zone</CardKicker>
+        <p className="m-0 text-[13px] opacity-80">
+          Deleting your account removes every transaction, card and category stored on
+          this device. <strong className="text-ink">This cannot be undone.</strong>
+        </p>
+        <Button variant="danger" className="self-start" onClick={handleDelete}>
+          Delete account
+        </Button>
+      </div>
     </Card>
   );
 }

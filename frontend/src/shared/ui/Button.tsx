@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/shared/lib/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 
 interface ButtonVariantsOptions {
   variant?: ButtonVariant;
@@ -16,6 +16,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   primary: "text-accent border-accent hover:bg-accent/12 active:bg-accent/22",
   secondary: "border-divider hover:bg-ink/7 active:bg-ink/14",
   ghost: "text-accent border-transparent px-[3px] hover:bg-accent/10 active:bg-accent/18",
+  danger: "text-danger border-danger/50 hover:bg-danger/12 active:bg-danger/22",
 };
 
 export function buttonVariants({

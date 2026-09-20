@@ -29,8 +29,16 @@ export function Card({ elevation = "sm", className, children, ...props }: CardPr
   );
 }
 
-export function CardKicker({ children }: { children: ReactNode }) {
+export function CardKicker({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <span className="text-[10px] tracking-[0.1em] text-accent uppercase">{children}</span>
+    <span className={cn("text-[10px] tracking-[0.1em] text-accent uppercase", className)}>
+      {children}
+    </span>
   );
 }

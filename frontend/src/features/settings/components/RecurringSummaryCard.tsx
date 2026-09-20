@@ -29,7 +29,10 @@ export function RecurringSummaryCard() {
           </div>
         ))}
       </div>
-      <Link to="/setup/recurring" className={buttonVariants({ variant: "secondary" })}>
+      <Link
+        to="/setup/recurring"
+        className={buttonVariants({ variant: "secondary", className: "self-start" })}
+      >
         Edit recurring
       </Link>
     </Card>

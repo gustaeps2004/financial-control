@@ -17,6 +17,8 @@
   --color-accent-2: #a7a1db;
   --color-divider: color-mix(in srgb, #e9e9ed 16%, transparent);
 
+  --color-danger: #ea5a6b;
+
   --color-hero-from: #262a60;
   --color-hero-via: #1c1e30;
 

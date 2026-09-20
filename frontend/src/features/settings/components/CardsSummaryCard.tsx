@@ -31,7 +31,10 @@ export function CardsSummaryCard() {
           </div>
         ))}
       </div>
-      <Link to="/setup/cards" className={buttonVariants({ variant: "secondary" })}>
+      <Link
+        to="/setup/cards"
+        className={buttonVariants({ variant: "secondary", className: "self-start" })}
+      >
         Add a card
       </Link>
     </Card>
