@@ -21,10 +21,10 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-screen flex-wrap items-stretch">
-      <aside className="flex min-w-[180px] flex-1 basis-[196px] flex-col gap-5 bg-sidebar p-3">
+      <aside className="flex w-50 flex-none flex-col gap-5 bg-sidebar p-3">
         <div className="px-2 py-0.5 text-[17px] font-semibold">Tally</div>
 
-        <nav className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-0.5">
+        <nav className="flex flex-col gap-0.5">
           {NAV_ITEMS.map(({ to, label, Icon }) => (
             <NavLink
               key={to}
