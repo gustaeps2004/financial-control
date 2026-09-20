@@ -16,6 +16,7 @@ import { UserEntity } from './infrastructure/persistence/entities/user.entity';
 import { UserSessionEntity } from './infrastructure/persistence/entities/user-session.entity';
 import { AuthController } from './infrastructure/http/auth.controller';
 import { UsersController } from './infrastructure/http/users.controller';
+import { JwtAuthGuard } from './infrastructure/http/guards/jwt-auth.guard';
 import { TypeOrmSessionsRepository } from './infrastructure/persistence/typeorm-sessions.repository';
 import { TypeOrmUsersRepository } from './infrastructure/persistence/typeorm-users.repository';
 
@@ -41,7 +42,8 @@ import { TypeOrmUsersRepository } from './infrastructure/persistence/typeorm-use
     { provide: SessionsRepository, useClass: TypeOrmSessionsRepository },
     { provide: PasswordHasher, useClass: Argon2PasswordHasher },
     { provide: TokenGenerator, useClass: JwtTokenGenerator },
+    JwtAuthGuard,
   ],
-  exports: [UsersService, SessionsService],
+  exports: [UsersService, SessionsService, JwtAuthGuard],
 })
 export class AuthenticationsModule {}

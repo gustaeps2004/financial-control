@@ -4,6 +4,7 @@ import { AuthProvider } from '../enums/auth-provider.enum';
 export class User extends BaseDomainEntity {
   username!: string;
   email!: string;
+  name: string = '';
   emailConfirmed: boolean = false;
   password: string | null = null;
   provider: AuthProvider = AuthProvider.LOCAL;

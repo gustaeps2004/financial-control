@@ -12,6 +12,9 @@ export class UserEntity extends EntityBase {
   @Column({ type: 'varchar', length: 255 })
   email!: string;
 
+  @Column({ type: 'varchar', length: 100, default: '' })
+  name: string = '';
+
   @Column({ type: 'boolean', default: false })
   emailConfirmed: boolean = false;
 

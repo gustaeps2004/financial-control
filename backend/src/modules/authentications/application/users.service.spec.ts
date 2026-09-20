@@ -2,10 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { User } from '../domain/entities/user.entity';
 import { AuthProvider } from '../domain/enums/auth-provider.enum';
 import { EmailAlreadyRegisteredException } from '../domain/exceptions/email-already-registered.exception';
+import { UserNotFoundException } from '../domain/exceptions/user-not-found.exception';
 import { UsernameAlreadyRegisteredException } from '../domain/exceptions/username-already-registered.exception';
 import { PasswordHasher } from '../domain/ports/password-hasher';
 import { UsersRepository } from '../domain/repositories/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserNameDto } from './dto/update-user-name.dto';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
@@ -95,6 +97,41 @@ describe('UsersService', () => {
 
       await expect(service.register(dto)).rejects.toThrow(
         UsernameAlreadyRegisteredException,
+      );
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateName', () => {
+    const updateDto: UpdateUserNameDto = { name: 'Jane Doe' };
+
+    it('updates and persists the name of an existing user', async () => {
+      const existingUser = Object.assign(new User(), {
+        id: 'user-1',
+        username: dto.email,
+        email: dto.email,
+        name: 'Old Name',
+      });
+      repository.findById.mockResolvedValue(existingUser);
+      repository.save.mockImplementation((user) => Promise.resolve(user));
+
+      const result = await service.updateName('user-1', updateDto);
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.findById).toHaveBeenCalledWith('user-1');
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Jane Doe' }),
+      );
+      expect(result.name).toBe('Jane Doe');
+    });
+
+    it('throws when the user does not exist', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(service.updateName('missing-id', updateDto)).rejects.toThrow(
+        UserNotFoundException,
       );
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
       expect(repository.save).not.toHaveBeenCalled();
