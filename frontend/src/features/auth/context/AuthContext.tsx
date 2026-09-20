@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import { authApi } from "../api/auth.api";
 import {
   clearSession,
@@ -15,6 +15,7 @@ interface AuthContextValue {
   displayName: string;
   login: (email: string, password: string, keepSignedIn: boolean) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
+  updateName: (name: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -27,19 +28,21 @@ function initialsFrom(name: string): string {
   return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
 }
 
+function resolveDisplayName(session: Session | null): string {
+  if (!session) return "";
+  return getDisplayName(session.email) ?? session.email.split("@")[0]!;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(() => loadSession());
-
-  const displayName = useMemo(() => {
-    if (!session) return "";
-    return getDisplayName(session.email) ?? session.email.split("@")[0]!;
-  }, [session]);
+  const [displayName, setDisplayName] = useState<string>(() => resolveDisplayName(session));
 
   const login = async (email: string, password: string, keepSignedIn: boolean) => {
     const response = await authApi.login({ email, password });
     const next: Session = { token: response.accessToken, expiresAt: response.expiresAt, email };
     saveSession(next, keepSignedIn);
     setSession(next);
+    setDisplayName(resolveDisplayName(next));
   };
 
   const register = async (email: string, password: string, name: string) => {
@@ -55,6 +58,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await login(email, password, true);
   };
 
+  const updateName = async (name: string) => {
+    const trimmed = name.trim();
+    if (!session || !trimmed) return;
+
+    await authApi.updateName(trimmed, session.token);
+    saveDisplayName(session.email, trimmed);
+    setDisplayName(trimmed);
+  };
+
   const logout = () => {
     clearSession();
     setSession(null);
@@ -66,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     displayName,
     login,
     register,
+    updateName,
     logout,
   };
 

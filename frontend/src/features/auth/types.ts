@@ -20,6 +20,16 @@ export interface RegisterResponse {
   createdAt?: string;
 }
 
+export interface UpdateUserNameRequest {
+  name: string;
+}
+
+export interface UpdateUserNameResponse {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface Session {
   token: string;
   expiresAt: string;

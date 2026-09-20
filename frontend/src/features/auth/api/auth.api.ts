@@ -4,6 +4,8 @@ import type {
   LoginResponse,
   RegisterRequest,
   RegisterResponse,
+  UpdateUserNameRequest,
+  UpdateUserNameResponse,
 } from "../types";
 
 export const authApi = {
@@ -11,4 +13,10 @@ export const authApi = {
     apiClient.post<LoginResponse, LoginRequest>("/auth/login", payload),
   register: (payload: RegisterRequest) =>
     apiClient.post<RegisterResponse, RegisterRequest>("/users", payload),
+  updateName: (name: string, token: string) =>
+    apiClient.patch<UpdateUserNameResponse, UpdateUserNameRequest>(
+      "/users/me",
+      { name },
+      { headers: { Authorization: `Bearer ${token}` } },
+    ),
 };

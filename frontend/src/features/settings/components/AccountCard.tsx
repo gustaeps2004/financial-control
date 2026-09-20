@@ -4,45 +4,47 @@ import { Field } from "@/shared/ui/Field";
 import { Input } from "@/shared/ui/Input";
 import { Button } from "@/shared/ui/Button";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { saveDisplayName } from "@/features/auth/lib/session-storage";
-import { useFinanceData } from "@/features/finance-data/context/FinanceDataContext";
-import { downloadCsv, transactionsToCsv } from "@/features/finance-data/lib/csv-export";
+import { ApiError } from "@/lib/http/api-error";
 
 export function AccountCard() {
-  const { session, displayName } = useAuth();
-  const { cards, transactions } = useFinanceData();
+  const { session, displayName, updateName } = useAuth();
   const [name, setName] = useState(displayName);
+  const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleNameBlur() {
-    if (!session || !name.trim() || name === displayName) return;
-    saveDisplayName(session.email, name.trim());
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-  }
+  const isUnchanged = !name.trim() || name.trim() === displayName;
 
-  function handleExport() {
-    const csv = transactionsToCsv(transactions, cards);
-    downloadCsv("tally-transactions.csv", csv);
+  async function handleSave() {
+    if (!session || isUnchanged) return;
+    setIsSaving(true);
+    setError(null);
+    try {
+      await updateName(name);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't update your name.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
     <Card className="gap-3 p-4">
       <CardKicker>Account</CardKicker>
       <Field label="Full name">
-        <Input value={name} onChange={(e) => setName(e.target.value)} onBlur={handleNameBlur} />
+        <Input value={name} onChange={(e) => setName(e.target.value)} />
       </Field>
       <Field label="Email">
         <Input value={session?.email ?? ""} disabled />
       </Field>
       <div className="flex items-center gap-2">
-        <Button variant="secondary" disabled>
-          Change password
-        </Button>
-        <Button variant="ghost" onClick={handleExport} disabled={transactions.length === 0}>
-          Export CSV
+        <Button variant="primary" onClick={handleSave} disabled={isUnchanged || isSaving}>
+          {isSaving ? "Saving…" : "Save"}
         </Button>
         {saved && <span className="text-[12px] text-accent">Saved</span>}
+        {error && <span className="text-[12px] text-accent-300">{error}</span>}
       </div>
     </Card>
   );
