@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/ui/Button";
-import { useFinanceData } from "@/features/finance-data/context/FinanceDataContext";
-import { CategoryEditor } from "@/features/finance-data/components/CategoryEditor";
+import { useCategories } from "@/features/categories/context/CategoriesContext";
+import { CategoryEditor } from "@/features/categories/components/CategoryEditor";
 
 export function CategoriesStepPage() {
-  const { categories } = useFinanceData();
+  const { categories } = useCategories();
   const navigate = useNavigate();
 
   return (

@@ -34,8 +34,12 @@ async function request<TResponse>(
 }
 
 export const apiClient = {
-  post: <TResponse, TBody = unknown>(path: string, body: TBody) =>
-    request<TResponse>(path, { method: "POST", body: JSON.stringify(body) }),
+  get: <TResponse>(path: string, init?: RequestInit) =>
+    request<TResponse>(path, { ...init, method: "GET" }),
+  post: <TResponse, TBody = unknown>(path: string, body: TBody, init?: RequestInit) =>
+    request<TResponse>(path, { ...init, method: "POST", body: JSON.stringify(body) }),
   patch: <TResponse, TBody = unknown>(path: string, body: TBody, init?: RequestInit) =>
     request<TResponse>(path, { ...init, method: "PATCH", body: JSON.stringify(body) }),
+  delete: <TResponse = void>(path: string, init?: RequestInit) =>
+    request<TResponse>(path, { ...init, method: "DELETE" }),
 };

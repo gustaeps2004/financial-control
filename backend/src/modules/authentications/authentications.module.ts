@@ -20,19 +20,24 @@ import { JwtAuthGuard } from './infrastructure/http/guards/jwt-auth.guard';
 import { TypeOrmSessionsRepository } from './infrastructure/persistence/typeorm-sessions.repository';
 import { TypeOrmUsersRepository } from './infrastructure/persistence/typeorm-users.repository';
 
+// Captured so the same registered instance can be re-exported below —
+// other modules that reuse JwtAuthGuard via @UseGuards() need JwtService
+// resolvable in their own injector context.
+const jwtModule = JwtModule.registerAsync({
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => ({
+    secret: config.getOrThrow<string>('JWT_SECRET'),
+    signOptions: {
+      expiresIn: config.get<StringValue>('JWT_EXPIRES_IN', '1s'),
+    },
+  }),
+});
+
 @Module({
   imports: [
     SharedModule,
     TypeOrmModule.forFeature([UserEntity, UserSessionEntity]),
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.getOrThrow<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: config.get<StringValue>('JWT_EXPIRES_IN', '1s'),
-        },
-      }),
-    }),
+    jwtModule,
   ],
   controllers: [UsersController, AuthController],
   providers: [
@@ -44,6 +49,6 @@ import { TypeOrmUsersRepository } from './infrastructure/persistence/typeorm-use
     { provide: TokenGenerator, useClass: JwtTokenGenerator },
     JwtAuthGuard,
   ],
-  exports: [UsersService, SessionsService, JwtAuthGuard],
+  exports: [UsersService, SessionsService, JwtAuthGuard, jwtModule],
 })
 export class AuthenticationsModule {}

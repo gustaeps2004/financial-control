@@ -3,11 +3,13 @@ import { Field } from "@/shared/ui/Field";
 import { Select } from "@/shared/ui/Select";
 import { useFinanceData } from "@/features/finance-data/context/FinanceDataContext";
 import { MONTH_NAMES_FULL, formatMoney } from "@/features/finance-data/lib/selectors";
+import { useCategories } from "@/features/categories/context/CategoriesContext";
 import { QuickAddTransactionForm } from "../components/QuickAddTransactionForm";
 import { TransactionsTable } from "../components/TransactionsTable";
 
 export function TransactionsPage() {
-  const { cards, categories, transactions, removeTransaction } = useFinanceData();
+  const { cards, transactions, removeTransaction } = useFinanceData();
+  const { categories } = useCategories();
 
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -70,9 +72,9 @@ export function TransactionsPage() {
           <Field label="Category" className="w-[150px]">
             <Select value={filterCat} onChange={(e) => setFilterCat(e.target.value)}>
               <option value="all">All categories</option>
-              {categories.map((name) => (
-                <option key={name} value={name}>
-                  {name}
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
                 </option>
               ))}
             </Select>

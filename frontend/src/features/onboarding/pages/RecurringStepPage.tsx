@@ -9,16 +9,11 @@ import { Table, TableBody, TableHead, TableRow, Td, Th } from "@/shared/ui/Table
 import { formatMoney, parseMoneyInput } from "@/shared/lib/money";
 import { useFinanceData } from "@/features/finance-data/context/FinanceDataContext";
 import { MONTH_NAMES_FULL } from "@/features/finance-data/lib/selectors";
+import { useCategories } from "@/features/categories/context/CategoriesContext";
 
 export function RecurringStepPage() {
-  const {
-    categories,
-    cards,
-    recurring,
-    addRecurring,
-    removeRecurring,
-    updateCard,
-  } = useFinanceData();
+  const { cards, recurring, addRecurring, removeRecurring, updateCard } = useFinanceData();
+  const { categories } = useCategories();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -34,7 +29,7 @@ export function RecurringStepPage() {
     if (!trimmed) return;
     addRecurring({
       name: trimmed,
-      cat: categories[0] ?? "Other",
+      cat: categories[0]?.name ?? "Other",
       day: day || "01",
       amount: parseMoneyInput(amount),
     });

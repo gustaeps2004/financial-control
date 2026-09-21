@@ -29,8 +29,6 @@ interface NewTransactionInput {
 }
 
 interface FinanceDataContextValue extends FinanceData {
-  addCategory: (name: string) => void;
-  removeCategory: (name: string) => void;
   addCard: (input: NewCardInput) => void;
   updateCard: (id: string, patch: Partial<CardAccount>) => void;
   removeCard: (id: string) => void;
@@ -60,23 +58,6 @@ export function FinanceDataProvider({ children }: { children: ReactNode }) {
 
   const value: FinanceDataContextValue = {
     ...data,
-
-    addCategory: (name) => {
-      const trimmed = name.trim();
-      if (!trimmed) return;
-      setData((prev) =>
-        prev.categories.includes(trimmed)
-          ? prev
-          : { ...prev, categories: [...prev.categories, trimmed] },
-      );
-    },
-
-    removeCategory: (name) => {
-      setData((prev) => ({
-        ...prev,
-        categories: prev.categories.filter((c) => c !== name),
-      }));
-    },
 
     addCard: (input) => {
       const card: CardAccount = {

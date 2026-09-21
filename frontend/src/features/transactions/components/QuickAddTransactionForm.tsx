@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/Button";
 import { parseMoneyInput } from "@/shared/lib/money";
 import { useFinanceData } from "@/features/finance-data/context/FinanceDataContext";
 import { MONTH_NAMES_FULL } from "@/features/finance-data/lib/selectors";
+import { useCategories } from "@/features/categories/context/CategoriesContext";
 import type { PaymentMethod } from "@/features/finance-data/types";
 
 interface QuickAddTransactionFormProps {
@@ -17,10 +18,18 @@ interface QuickAddTransactionFormProps {
 }
 
 export function QuickAddTransactionForm({ year, month, compact }: QuickAddTransactionFormProps) {
-  const { categories, cards, addTransaction } = useFinanceData();
+  const { cards, addTransaction } = useFinanceData();
+  const { categories } = useCategories();
 
   const [desc, setDesc] = useState("");
-  const [cat, setCat] = useState(categories[0] ?? "");
+  const [cat, setCat] = useState("");
+  const [hasDefaultedCat, setHasDefaultedCat] = useState(false);
+
+  if (!hasDefaultedCat && categories.length > 0) {
+    setHasDefaultedCat(true);
+    setCat(categories[0]!.name);
+  }
+
   const [amt, setAmt] = useState("");
   const [method, setMethod] = useState<PaymentMethod | "income">("card");
   const [cardId, setCardId] = useState(cards[0]?.id ?? "");
@@ -87,9 +96,9 @@ export function QuickAddTransactionForm({ year, month, compact }: QuickAddTransa
         </Field>
         <Field label="Category" className="min-w-0 flex-[1_1_130px]">
           <Select value={cat} onChange={(e) => setCat(e.target.value)}>
-            {categories.map((name) => (
-              <option key={name} value={name}>
-                {name}
+            {categories.map((category) => (
+              <option key={category.id} value={category.name}>
+                {category.name}
               </option>
             ))}
           </Select>

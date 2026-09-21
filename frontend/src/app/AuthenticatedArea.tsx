@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { RequireAuth } from "@/features/auth/components/RequireAuth";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { CategoriesProvider } from "@/features/categories/context/CategoriesContext";
 import { FinanceDataProvider } from "@/features/finance-data/context/FinanceDataContext";
 
 export function AuthenticatedArea() {
@@ -8,9 +9,11 @@ export function AuthenticatedArea() {
 
   return (
     <RequireAuth>
-      <FinanceDataProvider key={session?.email}>
-        <Outlet />
-      </FinanceDataProvider>
+      <CategoriesProvider key={session?.email}>
+        <FinanceDataProvider key={session?.email}>
+          <Outlet />
+        </FinanceDataProvider>
+      </CategoriesProvider>
     </RequireAuth>
   );
 }

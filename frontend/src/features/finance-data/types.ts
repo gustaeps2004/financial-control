@@ -34,14 +34,12 @@ export interface Transaction {
 }
 
 export interface FinanceData {
-  categories: string[];
   cards: CardAccount[];
   recurring: RecurringItem[];
   transactions: Transaction[];
 }
 
 export const EMPTY_FINANCE_DATA: FinanceData = {
-  categories: [],
   cards: [],
   recurring: [],
   transactions: [],

@@ -1,5 +1,5 @@
 import { Card, CardKicker } from "@/shared/ui/Card";
-import { CategoryEditor } from "@/features/finance-data/components/CategoryEditor";
+import { CategoryEditor } from "@/features/categories/components/CategoryEditor";
 import { AccountCard } from "../components/AccountCard";
 import { PreferencesCard } from "../components/PreferencesCard";
 import { CardsSummaryCard } from "../components/CardsSummaryCard";
