@@ -27,6 +27,12 @@ export function CardsProvider({ children }: { children: ReactNode }) {
   const [cards, setCards] = useState<CardAccount[]>([]);
   const [isLoading, setIsLoading] = useState(() => Boolean(token));
 
+  async function refresh(): Promise<void> {
+    if (!token) return;
+    const result = await cardsApi.list(token);
+    setCards(result);
+  }
+
   useEffect(() => {
     if (!token) return;
 
@@ -49,29 +55,43 @@ export function CardsProvider({ children }: { children: ReactNode }) {
     };
   }, [token]);
 
+  // Always re-sync with the server after a mutation, even when it fails, so
+  // local state can never drift from what the server actually holds.
   async function addCard(input: NewCardInput): Promise<void> {
     if (!token) return;
-    const card = await cardsApi.create(input, token);
-    setCards((prev) => [...prev, card]);
+    try {
+      await cardsApi.create(input, token);
+    } finally {
+      await refresh();
+    }
   }
 
   async function updateCard(id: string, patch: CardUpdateInput): Promise<void> {
     if (!token) return;
-    const updated = await cardsApi.update(id, patch, token);
-    setCards((prev) => prev.map((c) => (c.id === id ? updated : c)));
+    try {
+      await cardsApi.update(id, patch, token);
+    } finally {
+      await refresh();
+    }
   }
 
   async function removeCard(id: string): Promise<void> {
     if (!token) return;
-    await cardsApi.remove(id, token);
-    setCards((prev) => prev.filter((c) => c.id !== id));
+    try {
+      await cardsApi.remove(id, token);
+    } finally {
+      await refresh();
+    }
   }
 
   async function removeCardsByBrand(brand: string): Promise<void> {
     if (!token) return;
     const toRemove = cards.filter((c) => c.brand === brand);
-    await Promise.all(toRemove.map((c) => cardsApi.remove(c.id, token)));
-    setCards((prev) => prev.filter((c) => c.brand !== brand));
+    try {
+      await Promise.all(toRemove.map((c) => cardsApi.remove(c.id, token)));
+    } finally {
+      await refresh();
+    }
   }
 
   const value: CardsContextValue = {

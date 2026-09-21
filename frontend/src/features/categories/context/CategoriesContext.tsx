@@ -30,6 +30,12 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(() => Boolean(token));
 
+  async function refresh(): Promise<void> {
+    if (!token) return;
+    const result = await categoriesApi.list(token);
+    setCategories([...result].sort(byName));
+  }
+
   useEffect(() => {
     if (!token) return;
 
@@ -52,29 +58,40 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
     };
   }, [token]);
 
+  // Always re-sync with the server after a mutation, even when it fails —
+  // e.g. a "name already exists" rejection means the local list was already
+  // out of sync, and refreshing is what makes that visible instead of just
+  // reporting an error about a category the user can't see anywhere.
   async function addCategory(name: string): Promise<void> {
     const trimmed = name.trim();
     if (!trimmed || !token) return;
 
-    const category = await categoriesApi.create({ name: trimmed }, token);
-    setCategories((prev) => [...prev, category].sort(byName));
+    try {
+      await categoriesApi.create({ name: trimmed }, token);
+    } finally {
+      await refresh();
+    }
   }
 
   async function renameCategory(id: string, name: string): Promise<void> {
     const trimmed = name.trim();
     if (!trimmed || !token) return;
 
-    const updated = await categoriesApi.rename(id, { name: trimmed }, token);
-    setCategories((prev) =>
-      [...prev.map((c) => (c.id === id ? { ...c, name: updated.name } : c))].sort(byName),
-    );
+    try {
+      await categoriesApi.rename(id, { name: trimmed }, token);
+    } finally {
+      await refresh();
+    }
   }
 
   async function removeCategory(id: string): Promise<void> {
     if (!token) return;
 
-    await categoriesApi.remove(id, token);
-    setCategories((prev) => prev.filter((c) => c.id !== id));
+    try {
+      await categoriesApi.remove(id, token);
+    } finally {
+      await refresh();
+    }
   }
 
   const value: CategoriesContextValue = {
