@@ -10,6 +10,7 @@ import {
   sumByKind,
   transactionsInMonth,
 } from "@/features/finance-data/lib/selectors";
+import { useCards } from "@/features/cards/context/CardsContext";
 import { QuickAddTransactionForm } from "@/features/transactions/components/QuickAddTransactionForm";
 import { TransactionsTable } from "@/features/transactions/components/TransactionsTable";
 import { MonthChart } from "../components/MonthChart";
@@ -18,7 +19,8 @@ import { CategoryBreakdownCard } from "../components/CategoryBreakdownCard";
 import { CardsBalanceCard } from "../components/CardsBalanceCard";
 
 export function DashboardPage() {
-  const { cards, transactions } = useFinanceData();
+  const { transactions } = useFinanceData();
+  const { cards } = useCards();
 
   const now = new Date();
   const currentYear = now.getFullYear();

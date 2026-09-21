@@ -1,6 +1,7 @@
 import { Card, CardKicker } from "@/shared/ui/Card";
 import { cardBalance, formatMoney } from "@/features/finance-data/lib/selectors";
-import type { CardAccount, Transaction } from "@/features/finance-data/types";
+import type { CardAccount } from "@/features/cards/types";
+import type { Transaction } from "@/features/finance-data/types";
 
 interface CardsBalanceCardProps {
   cards: CardAccount[];

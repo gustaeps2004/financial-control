@@ -7,14 +7,7 @@ import {
 } from "react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { loadFinanceData, saveFinanceData } from "../lib/storage";
-import type { CardAccount, FinanceData, PaymentMethod, RecurringItem, Transaction } from "../types";
-
-interface NewCardInput {
-  brand: string;
-  mark: string;
-  swatch: string;
-  nick: string;
-}
+import type { FinanceData, PaymentMethod, RecurringItem, Transaction } from "../types";
 
 interface NewTransactionInput {
   year: number;
@@ -29,10 +22,6 @@ interface NewTransactionInput {
 }
 
 interface FinanceDataContextValue extends FinanceData {
-  addCard: (input: NewCardInput) => void;
-  updateCard: (id: string, patch: Partial<CardAccount>) => void;
-  removeCard: (id: string) => void;
-  removeCardsByBrand: (brand: string) => void;
   addRecurring: (input: Omit<RecurringItem, "id">) => void;
   removeRecurring: (id: string) => void;
   addTransaction: (input: NewTransactionInput) => void;
@@ -58,36 +47,6 @@ export function FinanceDataProvider({ children }: { children: ReactNode }) {
 
   const value: FinanceDataContextValue = {
     ...data,
-
-    addCard: (input) => {
-      const card: CardAccount = {
-        id: makeId("card"),
-        brand: input.brand,
-        mark: input.mark,
-        swatch: input.swatch,
-        nick: input.nick,
-        last4: "0000",
-        limit: 3000,
-        closeDay: "10",
-        opening: 0,
-      };
-      setData((prev) => ({ ...prev, cards: [...prev.cards, card] }));
-    },
-
-    updateCard: (id, patch) => {
-      setData((prev) => ({
-        ...prev,
-        cards: prev.cards.map((c) => (c.id === id ? { ...c, ...patch } : c)),
-      }));
-    },
-
-    removeCard: (id) => {
-      setData((prev) => ({ ...prev, cards: prev.cards.filter((c) => c.id !== id) }));
-    },
-
-    removeCardsByBrand: (brand) => {
-      setData((prev) => ({ ...prev, cards: prev.cards.filter((c) => c.brand !== brand) }));
-    },
 
     addRecurring: (input) => {
       const item: RecurringItem = { id: makeId("rec"), ...input };

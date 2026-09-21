@@ -4,12 +4,14 @@ import { Select } from "@/shared/ui/Select";
 import { useFinanceData } from "@/features/finance-data/context/FinanceDataContext";
 import { MONTH_NAMES_FULL, formatMoney } from "@/features/finance-data/lib/selectors";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
+import { useCards } from "@/features/cards/context/CardsContext";
 import { QuickAddTransactionForm } from "../components/QuickAddTransactionForm";
 import { TransactionsTable } from "../components/TransactionsTable";
 
 export function TransactionsPage() {
-  const { cards, transactions, removeTransaction } = useFinanceData();
+  const { transactions, removeTransaction } = useFinanceData();
   const { categories } = useCategories();
+  const { cards } = useCards();
 
   const now = new Date();
   const currentYear = now.getFullYear();

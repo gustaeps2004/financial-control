@@ -10,15 +10,19 @@ import { formatMoney, parseMoneyInput } from "@/shared/lib/money";
 import { useFinanceData } from "@/features/finance-data/context/FinanceDataContext";
 import { MONTH_NAMES_FULL } from "@/features/finance-data/lib/selectors";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
+import { useCards } from "@/features/cards/context/CardsContext";
+import { ApiError } from "@/lib/http/api-error";
 
 export function RecurringStepPage() {
-  const { cards, recurring, addRecurring, removeRecurring, updateCard } = useFinanceData();
+  const { recurring, addRecurring, removeRecurring } = useFinanceData();
   const { categories } = useCategories();
+  const { cards, updateCard } = useCards();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [day, setDay] = useState("");
   const [amount, setAmount] = useState("");
+  const [balanceError, setBalanceError] = useState<string | null>(null);
 
   const monthName = MONTH_NAMES_FULL[new Date().getMonth()];
   const totalCarried = cards.reduce((sum, c) => sum + c.opening, 0);
@@ -42,6 +46,17 @@ export function RecurringStepPage() {
     if (event.key === "Enter") {
       event.preventDefault();
       commitRecurring();
+    }
+  }
+
+  async function commitOpeningBalance(cardId: string, value: string) {
+    try {
+      setBalanceError(null);
+      await updateCard(cardId, { opening: parseMoneyInput(value) });
+    } catch (err) {
+      setBalanceError(
+        err instanceof ApiError ? err.message : "Couldn't save that balance. Please try again.",
+      );
     }
   }
 
@@ -128,18 +143,19 @@ export function RecurringStepPage() {
                     {card.mark}
                   </span>
                   <span className="min-w-0 flex-1 text-[13px]">{card.nick}</span>
-                  <span className="text-[12px] text-ink/55">•••• {card.last4}</span>
                 </div>
                 <Field label={`Balance carried into ${monthName}`}>
                   <Input
-                    value={formatMoney(card.opening)}
-                    onChange={(e) =>
-                      updateCard(card.id, { opening: parseMoneyInput(e.target.value) })
-                    }
+                    key={card.id}
+                    defaultValue={formatMoney(card.opening)}
+                    onBlur={(e) => void commitOpeningBalance(card.id, e.target.value)}
                   />
                 </Field>
               </Card>
             ))}
+            {balanceError && (
+              <p className="m-0 text-[12px] text-accent-300">{balanceError}</p>
+            )}
             <Card className="gap-1.5">
               <div className="flex justify-between text-[13px]">
                 <span className="text-ink/55">Total carried</span>

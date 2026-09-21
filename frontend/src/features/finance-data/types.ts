@@ -1,17 +1,5 @@
 export type PaymentMethod = "card" | "pix" | "debit" | "cash";
 
-export interface CardAccount {
-  id: string;
-  brand: string;
-  mark: string;
-  swatch: string;
-  nick: string;
-  last4: string;
-  limit: number;
-  closeDay: string;
-  opening: number;
-}
-
 export interface RecurringItem {
   id: string;
   name: string;
@@ -34,13 +22,11 @@ export interface Transaction {
 }
 
 export interface FinanceData {
-  cards: CardAccount[];
   recurring: RecurringItem[];
   transactions: Transaction[];
 }
 
 export const EMPTY_FINANCE_DATA: FinanceData = {
-  cards: [],
   recurring: [],
   transactions: [],
 };

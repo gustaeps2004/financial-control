@@ -9,6 +9,7 @@ import { parseMoneyInput } from "@/shared/lib/money";
 import { useFinanceData } from "@/features/finance-data/context/FinanceDataContext";
 import { MONTH_NAMES_FULL } from "@/features/finance-data/lib/selectors";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
+import { useCards } from "@/features/cards/context/CardsContext";
 import type { PaymentMethod } from "@/features/finance-data/types";
 
 interface QuickAddTransactionFormProps {
@@ -18,8 +19,9 @@ interface QuickAddTransactionFormProps {
 }
 
 export function QuickAddTransactionForm({ year, month, compact }: QuickAddTransactionFormProps) {
-  const { cards, addTransaction } = useFinanceData();
+  const { addTransaction } = useFinanceData();
   const { categories } = useCategories();
+  const { cards } = useCards();
 
   const [desc, setDesc] = useState("");
   const [cat, setCat] = useState("");
@@ -32,7 +34,14 @@ export function QuickAddTransactionForm({ year, month, compact }: QuickAddTransa
 
   const [amt, setAmt] = useState("");
   const [method, setMethod] = useState<PaymentMethod | "income">("card");
-  const [cardId, setCardId] = useState(cards[0]?.id ?? "");
+  const [cardId, setCardId] = useState("");
+  const [hasDefaultedCardId, setHasDefaultedCardId] = useState(false);
+
+  if (!hasDefaultedCardId && cards.length > 0) {
+    setHasDefaultedCardId(true);
+    setCardId(cards[0]!.id);
+  }
+
   const [day, setDay] = useState(String(new Date().getDate()).padStart(2, "0"));
 
   const currentMonthName = MONTH_NAMES_FULL[new Date().getMonth()];
@@ -125,7 +134,7 @@ export function QuickAddTransactionForm({ year, month, compact }: QuickAddTransa
             <Select value={cardId} onChange={(e) => setCardId(e.target.value)}>
               {cards.map((card) => (
                 <option key={card.id} value={card.id}>
-                  {card.nick} ···· {card.last4}
+                  {card.nick}
                 </option>
               ))}
             </Select>

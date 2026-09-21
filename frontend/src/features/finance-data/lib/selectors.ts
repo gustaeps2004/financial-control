@@ -1,5 +1,6 @@
 import { formatMoney } from "@/shared/lib/money";
-import type { CardAccount, Transaction } from "../types";
+import type { CardAccount } from "@/features/cards/types";
+import type { Transaction } from "../types";
 
 export const MONTH_LABELS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -54,7 +55,7 @@ export function methodLabel(
   if (transaction.kind === "in") return "Income";
   if (transaction.method === "card") {
     const card = cards.find((c) => c.id === transaction.cardId);
-    return card ? `${card.nick} ···· ${card.last4}` : "Card";
+    return card ? card.nick : "Card";
   }
   return { pix: "Pix", debit: "Debit", cash: "Cash" }[transaction.method] ?? transaction.method;
 }

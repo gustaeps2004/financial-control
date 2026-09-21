@@ -3,7 +3,8 @@ import { Tag } from "@/shared/ui/Tag";
 import { Button } from "@/shared/ui/Button";
 import { cn } from "@/shared/lib/cn";
 import { formatDateShort, formatDay, formatMoney, methodLabel } from "@/features/finance-data/lib/selectors";
-import type { CardAccount, Transaction } from "@/features/finance-data/types";
+import type { CardAccount } from "@/features/cards/types";
+import type { Transaction } from "@/features/finance-data/types";
 
 interface TransactionsTableProps {
   transactions: Transaction[];
