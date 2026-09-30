@@ -40,6 +40,12 @@ export const apiClient = {
     request<TResponse>(path, { ...init, method: "POST", body: JSON.stringify(body) }),
   patch: <TResponse, TBody = unknown>(path: string, body: TBody, init?: RequestInit) =>
     request<TResponse>(path, { ...init, method: "PATCH", body: JSON.stringify(body) }),
+  put: <TResponse, TBody = unknown>(path: string, body: TBody, init?: RequestInit) =>
+    request<TResponse>(path, { ...init, method: "PUT", body: JSON.stringify(body) }),
   delete: <TResponse = void>(path: string, init?: RequestInit) =>
     request<TResponse>(path, { ...init, method: "DELETE" }),
 };
+
+export function withAuth(token: string): RequestInit {
+  return { headers: { Authorization: `Bearer ${token}` } };
+}
