@@ -6,14 +6,15 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { useDataRevision } from "@/lib/data/data-revision";
 import { categoriesApi } from "../api/categories.api";
-import type { Category } from "../types";
+import type { Category, CategoryKind, UpdateCategoryRequest } from "../types";
 
 interface CategoriesContextValue {
   categories: Category[];
   isLoading: boolean;
-  addCategory: (name: string) => Promise<void>;
-  renameCategory: (id: string, name: string) => Promise<void>;
+  addCategory: (name: string, kind: CategoryKind) => Promise<void>;
+  updateCategory: (id: string, patch: UpdateCategoryRequest) => Promise<void>;
   removeCategory: (id: string) => Promise<void>;
 }
 
@@ -25,15 +26,18 @@ function byName(a: Category, b: Category): number {
 
 export function CategoriesProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
+  const { notifyChanged } = useDataRevision();
   const token = session?.token ?? "";
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(() => Boolean(token));
 
+  // Kinds decide how every report adds things up, so any change reloads them.
   async function refresh(): Promise<void> {
     if (!token) return;
     const result = await categoriesApi.list(token);
     setCategories([...result].sort(byName));
+    notifyChanged();
   }
 
   useEffect(() => {
@@ -62,23 +66,23 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
   // e.g. a "name already exists" rejection means the local list was already
   // out of sync, and refreshing is what makes that visible instead of just
   // reporting an error about a category the user can't see anywhere.
-  async function addCategory(name: string): Promise<void> {
+  async function addCategory(name: string, kind: CategoryKind): Promise<void> {
     const trimmed = name.trim();
     if (!trimmed || !token) return;
 
     try {
-      await categoriesApi.create({ name: trimmed }, token);
+      await categoriesApi.create({ name: trimmed, kind }, token);
     } finally {
       await refresh();
     }
   }
 
-  async function renameCategory(id: string, name: string): Promise<void> {
-    const trimmed = name.trim();
-    if (!trimmed || !token) return;
+  async function updateCategory(id: string, patch: UpdateCategoryRequest): Promise<void> {
+    const name = patch.name?.trim();
+    if (!token || name === "") return;
 
     try {
-      await categoriesApi.rename(id, { name: trimmed }, token);
+      await categoriesApi.update(id, { ...patch, name }, token);
     } finally {
       await refresh();
     }
@@ -98,7 +102,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
     categories,
     isLoading,
     addCategory,
-    renameCategory,
+    updateCategory,
     removeCategory,
   };
 

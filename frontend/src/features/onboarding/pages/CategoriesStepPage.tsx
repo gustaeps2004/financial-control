@@ -9,18 +9,19 @@ export function CategoriesStepPage() {
 
   return (
     <div>
-      <h2 className="mb-2">What do you spend on?</h2>
-      <p className="mb-6 max-w-[470px] text-[14px] text-ink/55 text-pretty">
-        Name your own categories — anything you'd want to see as a line on your month.
-        Add more any time.
+      <h2 className="mb-2">How does your month work?</h2>
+      <p className="mb-6 max-w-[500px] text-[14px] text-ink/55 text-pretty">
+        Name your own categories — anything you'd want to see as a line on your month —
+        and say what each one is: money coming in, a bill that repeats, day-to-day
+        spending, or money you put aside. Add more any time.
       </p>
 
-      <div className="mb-4 max-w-[430px]">
+      <div className="mb-4 max-w-[480px]">
         <CategoryEditor tone="surface" placeholder="e.g. Café, Cachorro, Projeto" />
       </div>
 
       <p className="mb-7.5 text-[12px] text-ink/55">
-        {categories.length} categories. Most people land between six and twelve.
+        {categories.length} categories. Most people land between eight and fifteen.
       </p>
 
       <div className="flex gap-2">
