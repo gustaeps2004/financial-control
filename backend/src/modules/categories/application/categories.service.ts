@@ -46,6 +46,30 @@ export class CategoriesService {
     return this.categoriesRepository.findAllByUser(userId);
   }
 
+  // Past records keep pointing at categories deleted since, so readers that
+  // resolve history need them too.
+  findAllIncludingDeleted(userId: string): Promise<Category[]> {
+    return this.categoriesRepository.findAllByUserIncludingDeleted(userId);
+  }
+
+  /**
+   * Public lookup for other modules. Only active categories can be picked for
+   * new records; `includeDeleted` is for re-validating an existing reference.
+   */
+  async getOwned(
+    userId: string,
+    id: string,
+    options: { includeDeleted?: boolean } = {},
+  ): Promise<Category> {
+    const category = await this.categoriesRepository.findById(id, {
+      withDeleted: options.includeDeleted ?? false,
+    });
+    if (!category || category.userId !== userId) {
+      throw new CategoryNotFoundException();
+    }
+    return category;
+  }
+
   async update(
     userId: string,
     id: string,
@@ -74,11 +98,7 @@ export class CategoriesService {
     await this.categoriesRepository.remove(category);
   }
 
-  private async findOwnedOrFail(userId: string, id: string): Promise<Category> {
-    const category = await this.categoriesRepository.findById(id);
-    if (!category || category.userId !== userId) {
-      throw new CategoryNotFoundException();
-    }
-    return category;
+  private findOwnedOrFail(userId: string, id: string): Promise<Category> {
+    return this.getOwned(userId, id);
   }
 }

@@ -23,8 +23,23 @@ export class TypeOrmCategoriesRepository extends CategoriesRepository {
     return entities.map((entity) => CategoryMapper.toDomain(entity));
   }
 
-  async findById(id: string): Promise<Category | null> {
-    const entity = await this.repository.findOne({ where: { id } });
+  async findAllByUserIncludingDeleted(userId: string): Promise<Category[]> {
+    const entities = await this.repository.find({
+      where: { userId },
+      withDeleted: true,
+      order: { name: 'ASC' },
+    });
+    return entities.map((entity) => CategoryMapper.toDomain(entity));
+  }
+
+  async findById(
+    id: string,
+    options: { withDeleted?: boolean } = {},
+  ): Promise<Category | null> {
+    const entity = await this.repository.findOne({
+      where: { id },
+      withDeleted: options.withDeleted ?? false,
+    });
     return entity ? CategoryMapper.toDomain(entity) : null;
   }
 

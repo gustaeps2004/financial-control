@@ -209,6 +209,50 @@ describe('CategoriesService', () => {
     });
   });
 
+  describe('getOwned', () => {
+    it('only looks up active categories by default', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(service.getOwned(userId, 'cat-1')).rejects.toThrow(
+        CategoryNotFoundException,
+      );
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.findById).toHaveBeenCalledWith('cat-1', {
+        withDeleted: false,
+      });
+    });
+
+    it('can resolve a deleted category that is still referenced', async () => {
+      const deletedCategory = Object.assign(new Category(), {
+        id: 'cat-1',
+        userId,
+        name: 'Groceries',
+        deletedAt: new Date('2026-01-01'),
+      });
+      repository.findById.mockResolvedValue(deletedCategory);
+
+      const result = await service.getOwned(userId, 'cat-1', {
+        includeDeleted: true,
+      });
+
+      expect(result).toBe(deletedCategory);
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.findById).toHaveBeenCalledWith('cat-1', {
+        withDeleted: true,
+      });
+    });
+
+    it('hides categories owned by another user', async () => {
+      repository.findById.mockResolvedValue(
+        Object.assign(new Category(), { id: 'cat-1', userId: 'someone-else' }),
+      );
+
+      await expect(service.getOwned(userId, 'cat-1')).rejects.toThrow(
+        CategoryNotFoundException,
+      );
+    });
+  });
+
   describe('remove', () => {
     it('removes a category owned by the user', async () => {
       const existingCategory = Object.assign(new Category(), {

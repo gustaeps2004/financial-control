@@ -23,8 +23,23 @@ export class TypeOrmCardsRepository extends CardsRepository {
     return entities.map((entity) => CardMapper.toDomain(entity));
   }
 
-  async findById(id: string): Promise<Card | null> {
-    const entity = await this.repository.findOne({ where: { id } });
+  async findAllByUserIncludingDeleted(userId: string): Promise<Card[]> {
+    const entities = await this.repository.find({
+      where: { userId },
+      withDeleted: true,
+      order: { createdAt: 'ASC' },
+    });
+    return entities.map((entity) => CardMapper.toDomain(entity));
+  }
+
+  async findById(
+    id: string,
+    options: { withDeleted?: boolean } = {},
+  ): Promise<Card | null> {
+    const entity = await this.repository.findOne({
+      where: { id },
+      withDeleted: options.withDeleted ?? false,
+    });
     return entity ? CardMapper.toDomain(entity) : null;
   }
 

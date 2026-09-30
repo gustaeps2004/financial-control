@@ -128,6 +128,37 @@ describe('CardsService', () => {
     });
   });
 
+  describe('getOwned', () => {
+    it('can resolve a deleted card that is still referenced', async () => {
+      const deletedCard = Object.assign(new Card(), {
+        id: 'card-1',
+        userId,
+        deletedAt: new Date('2026-01-01'),
+      });
+      repository.findById.mockResolvedValue(deletedCard);
+
+      const result = await service.getOwned(userId, 'card-1', {
+        includeDeleted: true,
+      });
+
+      expect(result).toBe(deletedCard);
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.findById).toHaveBeenCalledWith('card-1', {
+        withDeleted: true,
+      });
+    });
+
+    it('hides cards owned by another user', async () => {
+      repository.findById.mockResolvedValue(
+        Object.assign(new Card(), { id: 'card-1', userId: 'someone-else' }),
+      );
+
+      await expect(service.getOwned(userId, 'card-1')).rejects.toThrow(
+        CardNotFoundException,
+      );
+    });
+  });
+
   describe('remove', () => {
     it('removes a card owned by the user', async () => {
       const existingCard = Object.assign(new Card(), { id: 'card-1', userId });

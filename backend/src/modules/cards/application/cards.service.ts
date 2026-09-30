@@ -32,6 +32,30 @@ export class CardsService {
     return this.cardsRepository.findAllByUser(userId);
   }
 
+  // Past purchases keep pointing at cards removed since, so readers that
+  // resolve history need them too.
+  findAllIncludingDeleted(userId: string): Promise<Card[]> {
+    return this.cardsRepository.findAllByUserIncludingDeleted(userId);
+  }
+
+  /**
+   * Public lookup for other modules. Only active cards can be picked for new
+   * records; `includeDeleted` is for re-validating an existing reference.
+   */
+  async getOwned(
+    userId: string,
+    id: string,
+    options: { includeDeleted?: boolean } = {},
+  ): Promise<Card> {
+    const card = await this.cardsRepository.findById(id, {
+      withDeleted: options.includeDeleted ?? false,
+    });
+    if (!card || card.userId !== userId) {
+      throw new CardNotFoundException();
+    }
+    return card;
+  }
+
   async update(userId: string, id: string, dto: UpdateCardDto): Promise<Card> {
     const card = await this.findOwnedOrFail(userId, id);
 
@@ -50,11 +74,7 @@ export class CardsService {
     await this.cardsRepository.remove(card);
   }
 
-  private async findOwnedOrFail(userId: string, id: string): Promise<Card> {
-    const card = await this.cardsRepository.findById(id);
-    if (!card || card.userId !== userId) {
-      throw new CardNotFoundException();
-    }
-    return card;
+  private findOwnedOrFail(userId: string, id: string): Promise<Card> {
+    return this.getOwned(userId, id);
   }
 }
