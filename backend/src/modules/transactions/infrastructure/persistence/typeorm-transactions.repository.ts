@@ -39,6 +39,9 @@ export class TypeOrmTransactionsRepository extends TransactionsRepository {
     if (filters.paymentMethod) {
       where.paymentMethod = filters.paymentMethod;
     }
+    if (filters.minInstallments) {
+      where.installments = MoreThanOrEqual(filters.minInstallments);
+    }
 
     const entities = await this.repository.find({
       where,

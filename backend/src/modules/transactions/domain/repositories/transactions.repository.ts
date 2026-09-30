@@ -5,6 +5,7 @@ export interface TransactionFilters {
   from?: string; // YYYY-MM-DD, inclusive
   to?: string; // YYYY-MM-DD, inclusive
   paymentMethod?: PaymentMethod;
+  minInstallments?: number;
 }
 
 export abstract class TransactionsRepository {
