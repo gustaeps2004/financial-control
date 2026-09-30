@@ -43,12 +43,12 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  async rename(
+  async update(
     @CurrentUser() currentUser: AuthTokenPayload,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCategoryDto,
   ): Promise<CategoryResponseDto> {
-    const category = await this.categoriesService.rename(
+    const category = await this.categoriesService.update(
       currentUser.sub,
       id,
       dto,

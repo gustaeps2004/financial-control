@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Category } from '../domain/entities/category.entity';
+import { CategoryKind } from '../domain/enums/category-kind.enum';
 import { CategoryAlreadyExistsException } from '../domain/exceptions/category-already-exists.exception';
 import { CategoryNotFoundException } from '../domain/exceptions/category-not-found.exception';
 import { CategoriesRepository } from '../domain/repositories/categories.repository';
@@ -28,12 +29,14 @@ export class CategoriesService {
     if (deleted) {
       await this.categoriesRepository.restore(deleted);
       deleted.deletedAt = null;
-      return deleted;
+      deleted.kind = dto.kind ?? deleted.kind;
+      return this.categoriesRepository.save(deleted);
     }
 
     const category: Category = Object.assign(new Category(), {
       userId,
       name: dto.name,
+      kind: dto.kind ?? CategoryKind.EXPENSE,
     });
 
     return this.categoriesRepository.save(category);
@@ -43,14 +46,14 @@ export class CategoriesService {
     return this.categoriesRepository.findAllByUser(userId);
   }
 
-  async rename(
+  async update(
     userId: string,
     id: string,
     dto: UpdateCategoryDto,
   ): Promise<Category> {
     const category = await this.findOwnedOrFail(userId, id);
 
-    if (category.name !== dto.name) {
+    if (dto.name !== undefined && category.name !== dto.name) {
       const existing = await this.categoriesRepository.findByUserAndName(
         userId,
         dto.name,
@@ -58,9 +61,10 @@ export class CategoriesService {
       if (existing) {
         throw new CategoryAlreadyExistsException(dto.name);
       }
+      category.name = dto.name;
     }
 
-    category.name = dto.name;
+    if (dto.kind !== undefined) category.kind = dto.kind;
 
     return this.categoriesRepository.save(category);
   }

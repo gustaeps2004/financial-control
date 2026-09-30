@@ -1,5 +1,13 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+import { CategoryKind } from '../../domain/enums/category-kind.enum';
 
 export class CreateCategoryDto {
   @IsString()
@@ -10,4 +18,8 @@ export class CreateCategoryDto {
     typeof value === 'string' ? value.trim() : value,
   )
   name!: string;
+
+  @IsOptional()
+  @IsEnum(CategoryKind)
+  kind?: CategoryKind;
 }

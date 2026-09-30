@@ -10,6 +10,7 @@ export class CategoryMapper {
       deletedAt: entity.deletedAt,
       userId: entity.userId,
       name: entity.name,
+      kind: entity.kind,
     });
   }
 
@@ -21,6 +22,7 @@ export class CategoryMapper {
       deletedAt: domain.deletedAt,
       userId: domain.userId,
       name: domain.name,
+      kind: domain.kind,
     });
   }
 }

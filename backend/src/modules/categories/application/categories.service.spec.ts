@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Category } from '../domain/entities/category.entity';
+import { CategoryKind } from '../domain/enums/category-kind.enum';
 import { CategoryAlreadyExistsException } from '../domain/exceptions/category-already-exists.exception';
 import { CategoryNotFoundException } from '../domain/exceptions/category-not-found.exception';
 import { CategoriesRepository } from '../domain/repositories/categories.repository';
@@ -53,9 +54,28 @@ describe('CategoriesService', () => {
 
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
       expect(repository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ userId, name: dto.name }),
+        expect.objectContaining({
+          userId,
+          name: dto.name,
+          kind: CategoryKind.EXPENSE,
+        }),
       );
       expect(result.name).toBe(dto.name);
+    });
+
+    it('persists the requested kind', async () => {
+      repository.findByUserAndName.mockResolvedValue(null);
+      repository.findDeletedByUserAndName.mockResolvedValue(null);
+      repository.save.mockImplementation((category) =>
+        Promise.resolve(category),
+      );
+
+      const result = await service.create(userId, {
+        name: 'Salary',
+        kind: CategoryKind.INCOME,
+      });
+
+      expect(result.kind).toBe(CategoryKind.INCOME);
     });
 
     it('throws when the user already has a category with that name', async () => {
@@ -79,19 +99,24 @@ describe('CategoriesService', () => {
       });
       repository.findByUserAndName.mockResolvedValue(null);
       repository.findDeletedByUserAndName.mockResolvedValue(deletedCategory);
+      repository.save.mockImplementation((category) =>
+        Promise.resolve(category),
+      );
 
-      const result = await service.create(userId, dto);
+      const result = await service.create(userId, {
+        ...dto,
+        kind: CategoryKind.FIXED_BILL,
+      });
 
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
       expect(repository.restore).toHaveBeenCalledWith(deletedCategory);
-      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
-      expect(repository.save).not.toHaveBeenCalled();
       expect(result.id).toBe('cat-old');
       expect(result.deletedAt).toBeNull();
+      expect(result.kind).toBe(CategoryKind.FIXED_BILL);
     });
   });
 
-  describe('rename', () => {
+  describe('update', () => {
     const updateDto: UpdateCategoryDto = { name: 'Supermarket' };
 
     it('renames a category owned by the user', async () => {
@@ -106,7 +131,7 @@ describe('CategoriesService', () => {
         Promise.resolve(category),
       );
 
-      const result = await service.rename(userId, 'cat-1', updateDto);
+      const result = await service.update(userId, 'cat-1', updateDto);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
       expect(repository.save).toHaveBeenCalledWith(
@@ -115,11 +140,33 @@ describe('CategoriesService', () => {
       expect(result.name).toBe('Supermarket');
     });
 
+    it('changes only the kind when no name is given', async () => {
+      const existingCategory = Object.assign(new Category(), {
+        id: 'cat-1',
+        userId,
+        name: 'Freelance',
+        kind: CategoryKind.EXPENSE,
+      });
+      repository.findById.mockResolvedValue(existingCategory);
+      repository.save.mockImplementation((category) =>
+        Promise.resolve(category),
+      );
+
+      const result = await service.update(userId, 'cat-1', {
+        kind: CategoryKind.INCOME,
+      });
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.findByUserAndName).not.toHaveBeenCalled();
+      expect(result.name).toBe('Freelance');
+      expect(result.kind).toBe(CategoryKind.INCOME);
+    });
+
     it('throws when the category does not exist', async () => {
       repository.findById.mockResolvedValue(null);
 
       await expect(
-        service.rename(userId, 'missing-id', updateDto),
+        service.update(userId, 'missing-id', updateDto),
       ).rejects.toThrow(CategoryNotFoundException);
     });
 
@@ -132,7 +179,7 @@ describe('CategoriesService', () => {
         }),
       );
 
-      await expect(service.rename(userId, 'cat-1', updateDto)).rejects.toThrow(
+      await expect(service.update(userId, 'cat-1', updateDto)).rejects.toThrow(
         CategoryNotFoundException,
       );
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
@@ -154,7 +201,7 @@ describe('CategoriesService', () => {
         }),
       );
 
-      await expect(service.rename(userId, 'cat-1', updateDto)).rejects.toThrow(
+      await expect(service.update(userId, 'cat-1', updateDto)).rejects.toThrow(
         CategoryAlreadyExistsException,
       );
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
