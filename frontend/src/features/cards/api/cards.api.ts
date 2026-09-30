@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/http/api-client";
+import { apiClient, withAuth } from "@/lib/http/api-client";
 import type {
   CardAccount,
   CardResponse,
@@ -7,10 +7,6 @@ import type {
   NewCardInput,
   UpdateCardRequest,
 } from "../types";
-
-function withAuth(token: string): RequestInit {
-  return { headers: { Authorization: `Bearer ${token}` } };
-}
 
 function toCardAccount(response: CardResponse): CardAccount {
   return {
@@ -21,6 +17,7 @@ function toCardAccount(response: CardResponse): CardAccount {
     nick: response.nickname,
     limit: response.creditLimit,
     closeDay: String(response.closingDay),
+    dueDay: response.dueDay === null ? "" : String(response.dueDay),
     opening: response.openingBalance,
   };
 }
@@ -32,6 +29,11 @@ function toUpdateRequest(patch: CardUpdateInput): UpdateCardRequest {
   if (patch.closeDay !== undefined) {
     const closingDay = parseInt(patch.closeDay, 10);
     if (!Number.isNaN(closingDay)) request.closingDay = closingDay;
+  }
+  if (patch.dueDay !== undefined) {
+    const dueDay = parseInt(patch.dueDay, 10);
+    if (patch.dueDay.trim() === "") request.dueDay = null;
+    else if (!Number.isNaN(dueDay)) request.dueDay = dueDay;
   }
   if (patch.opening !== undefined) request.openingBalance = patch.opening;
   return request;

@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { useDataRevision } from "@/lib/data/data-revision";
 import { cardsApi } from "../api/cards.api";
 import type { CardAccount, CardUpdateInput, NewCardInput } from "../types";
 
@@ -22,15 +23,19 @@ const CardsContext = createContext<CardsContextValue | null>(null);
 
 export function CardsProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
+  const { notifyChanged } = useDataRevision();
   const token = session?.token ?? "";
 
   const [cards, setCards] = useState<CardAccount[]>([]);
   const [isLoading, setIsLoading] = useState(() => Boolean(token));
 
+  // Closing and due days decide which statement every purchase lands on,
+  // so any change reloads the reports.
   async function refresh(): Promise<void> {
     if (!token) return;
     const result = await cardsApi.list(token);
     setCards(result);
+    notifyChanged();
   }
 
   useEffect(() => {

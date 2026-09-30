@@ -6,6 +6,8 @@ export interface CardAccount {
   nick: string;
   limit: number;
   closeDay: string;
+  // Empty when the bill is due in the same month the statement closes.
+  dueDay: string;
   opening: number;
 }
 
@@ -20,6 +22,7 @@ export interface CardUpdateInput {
   nick?: string;
   limit?: number;
   closeDay?: string;
+  dueDay?: string;
   opening?: number;
 }
 
@@ -31,6 +34,7 @@ export interface CardResponse {
   nickname: string;
   creditLimit: number;
   closingDay: number;
+  dueDay: number | null;
   openingBalance: number;
   createdAt?: string;
 }
@@ -46,5 +50,6 @@ export interface UpdateCardRequest {
   nickname?: string;
   creditLimit?: number;
   closingDay?: number;
+  dueDay?: number | null;
   openingBalance?: number;
 }

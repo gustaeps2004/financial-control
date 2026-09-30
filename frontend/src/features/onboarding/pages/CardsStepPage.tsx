@@ -39,7 +39,10 @@ export function CardsStepPage() {
     }
   }
 
-  async function commitField(id: string, patch: { nick?: string; limit?: number; closeDay?: string }) {
+  async function commitField(
+    id: string,
+    patch: { nick?: string; limit?: number; closeDay?: string; dueDay?: string },
+  ) {
     try {
       setError(null);
       await updateCard(id, patch);
@@ -121,8 +124,18 @@ export function CardsStepPage() {
             <Field label="Closes day" className="flex-[0_1_96px]">
               <Input
                 key={`${card.id}-closeDay`}
+                inputMode="numeric"
                 defaultValue={card.closeDay}
                 onBlur={(e) => void commitField(card.id, { closeDay: e.target.value })}
+              />
+            </Field>
+            <Field label="Due day" className="flex-[0_1_96px]">
+              <Input
+                key={`${card.id}-dueDay`}
+                inputMode="numeric"
+                placeholder="—"
+                defaultValue={card.dueDay}
+                onBlur={(e) => void commitField(card.id, { dueDay: e.target.value })}
               />
             </Field>
             <Button
@@ -135,6 +148,14 @@ export function CardsStepPage() {
           </Card>
         ))}
       </div>
+
+      {cards.length > 0 && (
+        <p className="mb-4 max-w-[640px] text-[12px] text-ink/55 text-pretty">
+          Purchases up to the closing day land on that month's statement; later ones roll
+          to the next. Statements are named after the month they're due — leave the due
+          day empty if the bill is due in the same month it closes.
+        </p>
+      )}
 
       {error && <p className="mb-4 text-[12px] text-accent-300">{error}</p>}
 
