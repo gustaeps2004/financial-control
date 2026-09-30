@@ -7,6 +7,11 @@ export abstract class CategoriesRepository {
     userId: string,
     name: string,
   ): Promise<Category | null>;
+  abstract findDeletedByUserAndName(
+    userId: string,
+    name: string,
+  ): Promise<Category | null>;
   abstract save(category: Category): Promise<Category>;
   abstract remove(category: Category): Promise<void>;
+  abstract restore(category: Category): Promise<void>;
 }

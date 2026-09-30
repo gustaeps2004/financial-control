@@ -19,6 +19,18 @@ export class CategoriesService {
       throw new CategoryAlreadyExistsException(dto.name);
     }
 
+    // Bringing the deleted category back (instead of inserting a twin) keeps
+    // everything already recorded under it attached to the same category.
+    const deleted = await this.categoriesRepository.findDeletedByUserAndName(
+      userId,
+      dto.name,
+    );
+    if (deleted) {
+      await this.categoriesRepository.restore(deleted);
+      deleted.deletedAt = null;
+      return deleted;
+    }
+
     const category: Category = Object.assign(new Category(), {
       userId,
       name: dto.name,

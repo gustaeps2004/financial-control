@@ -2,7 +2,7 @@ import { Column, Entity, Index } from 'typeorm';
 import { EntityBase } from '../../../../../shared/entities/base.entity';
 
 @Entity({ name: 'categories', schema: 'categories' })
-@Index(['userId', 'name'], { unique: true })
+@Index(['userId', 'name'], { unique: true, where: '"deleted_at" IS NULL' })
 export class CategoryEntity extends EntityBase {
   @Index()
   @Column({ type: 'uuid' })

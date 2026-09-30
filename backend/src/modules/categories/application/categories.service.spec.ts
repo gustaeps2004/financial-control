@@ -24,8 +24,10 @@ describe('CategoriesService', () => {
             findAllByUser: jest.fn(),
             findById: jest.fn(),
             findByUserAndName: jest.fn(),
+            findDeletedByUserAndName: jest.fn(),
             save: jest.fn(),
             remove: jest.fn(),
+            restore: jest.fn(),
           },
         },
       ],
@@ -42,6 +44,7 @@ describe('CategoriesService', () => {
   describe('create', () => {
     it('creates and persists a category owned by the user', async () => {
       repository.findByUserAndName.mockResolvedValue(null);
+      repository.findDeletedByUserAndName.mockResolvedValue(null);
       repository.save.mockImplementation((category) =>
         Promise.resolve(category),
       );
@@ -65,6 +68,26 @@ describe('CategoriesService', () => {
       );
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
       expect(repository.save).not.toHaveBeenCalled();
+    });
+
+    it('restores a deleted category with the same name instead of creating a twin', async () => {
+      const deletedCategory = Object.assign(new Category(), {
+        id: 'cat-old',
+        userId,
+        name: dto.name,
+        deletedAt: new Date('2026-01-01'),
+      });
+      repository.findByUserAndName.mockResolvedValue(null);
+      repository.findDeletedByUserAndName.mockResolvedValue(deletedCategory);
+
+      const result = await service.create(userId, dto);
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.restore).toHaveBeenCalledWith(deletedCategory);
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.save).not.toHaveBeenCalled();
+      expect(result.id).toBe('cat-old');
+      expect(result.deletedAt).toBeNull();
     });
   });
 

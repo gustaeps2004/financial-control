@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { Category } from '../../domain/entities/category.entity';
 import { CategoriesRepository } from '../../domain/repositories/categories.repository';
 import { CategoryEntity } from './entities/category.entity';
@@ -36,6 +36,18 @@ export class TypeOrmCategoriesRepository extends CategoriesRepository {
     return entity ? CategoryMapper.toDomain(entity) : null;
   }
 
+  async findDeletedByUserAndName(
+    userId: string,
+    name: string,
+  ): Promise<Category | null> {
+    const entity = await this.repository.findOne({
+      where: { userId, name, deletedAt: Not(IsNull()) },
+      withDeleted: true,
+      order: { deletedAt: 'DESC' },
+    });
+    return entity ? CategoryMapper.toDomain(entity) : null;
+  }
+
   async save(category: Category): Promise<Category> {
     const saved = await this.repository.save(
       CategoryMapper.toPersistence(category),
@@ -45,5 +57,9 @@ export class TypeOrmCategoriesRepository extends CategoriesRepository {
 
   async remove(category: Category): Promise<void> {
     await this.repository.softDelete(category.id!);
+  }
+
+  async restore(category: Category): Promise<void> {
+    await this.repository.restore(category.id!);
   }
 }
