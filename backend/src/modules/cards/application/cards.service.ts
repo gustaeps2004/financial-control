@@ -38,6 +38,7 @@ export class CardsService {
     if (dto.nickname !== undefined) card.nickname = dto.nickname;
     if (dto.creditLimit !== undefined) card.creditLimit = dto.creditLimit;
     if (dto.closingDay !== undefined) card.closingDay = dto.closingDay;
+    if (dto.dueDay !== undefined) card.dueDay = dto.dueDay;
     if (dto.openingBalance !== undefined)
       card.openingBalance = dto.openingBalance;
 

@@ -89,6 +89,24 @@ describe('CardsService', () => {
       expect(result.closingDay).toBe(10);
     });
 
+    it('sets and clears the due day', async () => {
+      const existingCard = Object.assign(new Card(), {
+        id: 'card-1',
+        userId,
+        closingDay: 9,
+        dueDay: null,
+      });
+      repository.findById.mockResolvedValue(existingCard);
+      repository.save.mockImplementation((card) => Promise.resolve(card));
+
+      const withDueDay = await service.update(userId, 'card-1', { dueDay: 16 });
+      expect(withDueDay.dueDay).toBe(16);
+
+      const cleared = await service.update(userId, 'card-1', { dueDay: null });
+      expect(cleared.dueDay).toBeNull();
+      expect(cleared.closingDay).toBe(9);
+    });
+
     it('throws when the card does not exist', async () => {
       repository.findById.mockResolvedValue(null);
 

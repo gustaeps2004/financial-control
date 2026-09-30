@@ -31,6 +31,13 @@ export class UpdateCardDto {
   @Max(31)
   closingDay?: number;
 
+  // null clears it (bill due in the same month the statement closes).
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(31)
+  dueDay?: number | null;
+
   @IsOptional()
   @IsNumber()
   @Min(0)

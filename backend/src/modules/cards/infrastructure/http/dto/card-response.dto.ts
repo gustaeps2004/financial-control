@@ -8,6 +8,7 @@ export class CardResponseDto {
   readonly nickname: string;
   readonly creditLimit: number;
   readonly closingDay: number;
+  readonly dueDay: number | null;
   readonly openingBalance: number;
   readonly createdAt?: Date;
 
@@ -19,6 +20,7 @@ export class CardResponseDto {
     this.nickname = card.nickname;
     this.creditLimit = card.creditLimit;
     this.closingDay = card.closingDay;
+    this.dueDay = card.dueDay;
     this.openingBalance = card.openingBalance;
     this.createdAt = card.createdAt;
   }

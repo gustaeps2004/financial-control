@@ -15,6 +15,7 @@ export class CardMapper {
       nickname: entity.nickname,
       creditLimit: entity.creditLimit,
       closingDay: entity.closingDay,
+      dueDay: entity.dueDay,
       openingBalance: entity.openingBalance,
     });
   }
@@ -32,6 +33,7 @@ export class CardMapper {
       nickname: domain.nickname,
       creditLimit: domain.creditLimit,
       closingDay: domain.closingDay,
+      dueDay: domain.dueDay,
       openingBalance: domain.openingBalance,
     });
   }

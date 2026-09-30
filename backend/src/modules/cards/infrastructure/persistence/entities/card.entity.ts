@@ -31,6 +31,9 @@ export class CardEntity extends EntityBase {
   @Column({ type: 'smallint' })
   closingDay!: number;
 
+  @Column({ type: 'smallint', nullable: true })
+  dueDay: number | null = null;
+
   @Column({
     type: 'numeric',
     precision: 12,
