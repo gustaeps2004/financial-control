@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthenticationsModule } from './modules/authentications/authentications.module';
+import { CardStatementsModule } from './modules/card-statements/card-statements.module';
 import { CardsModule } from './modules/cards/cards.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { FinancialControlApiModule } from './modules/financial-control-api/financial-control-api.module';
@@ -32,6 +33,7 @@ import { SharedModule } from './shared/shared.module';
     CategoriesModule,
     RecurringTransactionsModule,
     TransactionsModule,
+    CardStatementsModule,
     FinancialControlApiModule,
   ],
 })
