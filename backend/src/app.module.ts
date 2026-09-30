@@ -6,6 +6,7 @@ import { CardsModule } from './modules/cards/cards.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { FinancialControlApiModule } from './modules/financial-control-api/financial-control-api.module';
 import { RecurringTransactionsModule } from './modules/recurring-transactions/recurring-transactions.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
 import { buildDatabaseConnectionOptions } from './shared/database/database-connection.config';
 import { SharedModule } from './shared/shared.module';
 
@@ -30,6 +31,7 @@ import { SharedModule } from './shared/shared.module';
     CardsModule,
     CategoriesModule,
     RecurringTransactionsModule,
+    TransactionsModule,
     FinancialControlApiModule,
   ],
 })
