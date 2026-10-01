@@ -1,11 +1,19 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Gear, ListBullets, Repeat, SignOut, SquaresFour } from "@phosphor-icons/react";
+import {
+  CreditCard,
+  Gear,
+  ListBullets,
+  Repeat,
+  SignOut,
+  SquaresFour,
+} from "@phosphor-icons/react";
 import { cn } from "@/shared/lib/cn";
 import { useAuth, useInitials } from "@/features/auth/context/AuthContext";
 
 const NAV_ITEMS = [
   { to: "/app/dashboard", label: "Dashboard", Icon: SquaresFour },
   { to: "/app/transactions", label: "Transactions", Icon: ListBullets },
+  { to: "/app/statements", label: "Statements", Icon: CreditCard },
   { to: "/app/recurring", label: "Recurring", Icon: Repeat },
   { to: "/app/settings", label: "Settings", Icon: Gear },
 ];

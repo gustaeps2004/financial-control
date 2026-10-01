@@ -26,9 +26,14 @@ export function parseMoneyInput(value: string): number {
   return parseFloat(normalized) || 0;
 }
 
+/** The number alone, for tight spots where the currency is implied: "2.852,00". */
+export function formatAmount(amount: number): string {
+  return formatMoney(amount).replace("R$ ", "");
+}
+
 /** An amount as it would be typed back into a field: "-1.663,08". */
 export function formatMoneyInput(amount: number): string {
-  return (amount < 0 ? "-" : "") + formatMoney(amount).replace("R$ ", "");
+  return (amount < 0 ? "-" : "") + formatAmount(amount);
 }
 
 /** "− R$ 10,00" or "+ R$ 10,00"; zero has no sign. */

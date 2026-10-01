@@ -2,16 +2,23 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { X } from "@phosphor-icons/react";
 import { cn } from "@/shared/lib/cn";
 
+type DialogSize = "md" | "lg";
+
 interface DialogProps {
   open: boolean;
   title: string;
   onClose: () => void;
   children: ReactNode;
-  className?: string;
+  size?: DialogSize;
 }
 
+const sizeClasses: Record<DialogSize, string> = {
+  md: "w-[min(560px,calc(100vw-32px))]",
+  lg: "w-[min(700px,calc(100vw-32px))]",
+};
+
 /** A modal on top of the native <dialog>: focus trap and Esc come for free. */
-export function Dialog({ open, title, onClose, children, className }: DialogProps) {
+export function Dialog({ open, title, onClose, children, size = "md" }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -31,9 +38,9 @@ export function Dialog({ open, title, onClose, children, className }: DialogProp
         if (event.target === event.currentTarget) onClose();
       }}
       className={cn(
-        "m-auto w-[min(560px,calc(100vw-32px))] rounded-lg border-0 bg-surface p-0 text-ink",
+        "m-auto rounded-lg border-0 bg-surface p-0 text-ink",
         "shadow-[var(--shadow-elev-lg)] backdrop:bg-black/60",
-        className,
+        sizeClasses[size],
       )}
     >
       {open && (
