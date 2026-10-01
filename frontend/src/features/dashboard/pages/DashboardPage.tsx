@@ -4,10 +4,12 @@ import { Info } from "@phosphor-icons/react";
 import { Card, CardKicker } from "@/shared/ui/Card";
 import { buttonVariants } from "@/shared/ui/Button";
 import { cn } from "@/shared/lib/cn";
-import { currentYearMonth, formatYearMonth, parseYearMonth } from "@/shared/lib/dates";
+import { currentYearMonth, parseYearMonth } from "@/shared/lib/dates";
 import { formatMoney, formatMoneyWithMinus, formatPercent } from "@/shared/lib/money";
 import { paymentMethodLabel } from "@/shared/lib/payment-methods";
+import { errorMessage } from "@/lib/i18n/error-message";
 import { useI18n } from "@/lib/i18n/i18n-context";
+import type { Messages } from "@/lib/i18n/messages/en";
 import { useAnnual, useSummary } from "@/features/reports/hooks/use-reports";
 import type { SummaryPeriod, SummaryView } from "@/features/reports/types";
 import { BreakdownTable } from "../components/BreakdownTable";
@@ -29,15 +31,16 @@ function periodOf(mode: PeriodMode, month: string): SummaryPeriod {
   }
 }
 
-function periodTitle(mode: PeriodMode, month: string): string {
-  if (mode === "MONTH") return formatYearMonth(month);
+function periodTitle(mode: PeriodMode, month: string, t: Messages): string {
+  if (mode === "MONTH") return t.dates.yearMonth(month);
   if (mode === "YEAR") return String(parseYearMonth(month).year);
-  return "All time";
+  return t.dashboard.allTime;
 }
 
 const share = (value: number) => (value > 0 ? formatPercent(value) : "—");
 
 export function DashboardPage() {
+  const { t } = useI18n();
   const [mode, setMode] = useState<PeriodMode>("MONTH");
   const [month, setMonth] = useState(currentYearMonth);
 
@@ -49,11 +52,9 @@ export function DashboardPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h3 className="mb-0.5">{periodTitle(mode, month)}</h3>
+          <h3 className="mb-0.5">{periodTitle(mode, month, t)}</h3>
           <p className="m-0 text-[13px] text-ink/55">
-            {mode === "MONTH"
-              ? "Where the month's money came from and where it went."
-              : "Only what already happened — projections stay out of these totals."}
+            {mode === "MONTH" ? t.dashboard.monthIntro : t.dashboard.periodIntro}
           </p>
         </div>
         <PeriodControls
@@ -67,13 +68,12 @@ export function DashboardPage() {
       {data?.projected && (
         <p className="m-0 flex items-start gap-2 rounded-md border border-accent/35 bg-accent/8 px-3 py-2 text-[12.5px] text-ink/85">
           <Info size={16} className="mt-px flex-none text-accent" />
-          {formatYearMonth(month)} hasn't happened yet: fixed bills and card statements below
-          are projections, and card bills count at their expected value.
+          {t.dashboard.projectedNotice(month)}
         </p>
       )}
       {summary.error && (
         <p className="m-0 text-[12.5px] text-accent-300">
-          Couldn't load this period: {summary.error.message}
+          {errorMessage(summary.error, t, t.dashboard.loadFailed)}
         </p>
       )}
 
@@ -85,10 +85,8 @@ export function DashboardPage() {
           {annual.data && (
             <Card className="gap-3 p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <CardKicker>{annual.data.year} month by month</CardKicker>
-                <span className="text-[11.5px] text-ink/50">
-                  Money that left the account · pick a month to see it
-                </span>
+                <CardKicker>{t.dashboard.yearByMonth(annual.data.year)}</CardKicker>
+                <span className="text-[11.5px] text-ink/50">{t.dashboard.yearByMonthHint}</span>
               </div>
               <YearTrendChart
                 annual={annual.data}
@@ -109,6 +107,7 @@ export function DashboardPage() {
 }
 
 function OverviewCard({ data }: { data: SummaryView }) {
+  const { t } = useI18n();
   const { cashFlow } = data;
   const isShort = cashFlow.leftover < 0;
   const hasActivity =
@@ -118,34 +117,34 @@ function OverviewCard({ data }: { data: SummaryView }) {
     <Card className="gap-5 p-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[12.5px] text-ink/60">{isShort ? "Short by" : "Left over"}</span>
+          <span className="text-[12.5px] text-ink/60">
+            {isShort ? t.dashboard.shortBy : t.dashboard.leftOver}
+          </span>
           {/* The one hero figure of the page; "Short by" already says it's negative. */}
           <span className="text-[40px] leading-none font-semibold tracking-[-0.03em] sm:text-[48px]">
             {formatMoney(cashFlow.leftover)}
           </span>
           <span className="text-[12.5px] text-ink/55">
             {cashFlow.income > 0
-              ? `of ${formatMoney(cashFlow.income)} that came in`
-              : "Nothing came in during this period."}
+              ? t.dashboard.ofIncome(formatMoney(cashFlow.income))
+              : t.dashboard.nothingCameIn}
           </span>
         </div>
         <Link to="/app/transactions" className={buttonVariants({ variant: "secondary" })}>
-          Log a transaction
+          {t.dashboard.logTransaction}
         </Link>
       </div>
       {hasActivity ? (
         <CashFlowBridge cashFlow={cashFlow} />
       ) : (
-        <p className="m-0 text-[13px] text-ink/55">
-          Nothing recorded in this period yet. Log transactions or add what repeats every
-          month, and this fills itself in.
-        </p>
+        <p className="m-0 text-[13px] text-ink/55">{t.dashboard.nothingRecorded}</p>
       )}
     </Card>
   );
 }
 
 function KpiRow({ data, mode }: { data: SummaryView; mode: PeriodMode }) {
+  const { t } = useI18n();
   const { cashFlow } = data;
   const outstanding = data.cards.reduce((sum, line) => sum + line.outstanding, 0);
 
@@ -157,29 +156,29 @@ function KpiRow({ data, mode }: { data: SummaryView; mode: PeriodMode }) {
       )}
     >
       <StatTile
-        label="Saved"
+        label={t.dashboard.kpis.saved}
         value={cashFlow.income > 0 ? formatPercent(cashFlow.savingsRate) : "—"}
         detail={
           cashFlow.savings < 0
-            ? `${formatMoney(cashFlow.savings)} taken back out of savings`
-            : `${formatMoney(cashFlow.savings)} put aside`
+            ? t.dashboard.kpis.takenFromSavings(formatMoney(cashFlow.savings))
+            : t.dashboard.kpis.putAside(formatMoney(cashFlow.savings))
         }
       />
       <StatTile
-        label="Committed"
+        label={t.dashboard.kpis.committed}
         value={cashFlow.income > 0 ? formatPercent(cashFlow.committedRate) : "—"}
-        detail={`${formatMoney(cashFlow.totalOut)} left the account`}
+        detail={t.dashboard.kpis.leftTheAccount(formatMoney(cashFlow.totalOut))}
       />
       <StatTile
-        label="Charged to cards"
+        label={t.dashboard.kpis.chargedToCards}
         value={formatMoney(cashFlow.creditPurchases)}
-        detail="Leaves the account when those statements are paid"
+        detail={t.dashboard.kpis.chargedToCardsHint}
       />
       {mode === "MONTH" && (
         <StatTile
-          label="Card bills still to pay"
+          label={t.dashboard.kpis.billsToPay}
           value={formatMoney(outstanding)}
-          detail={outstanding > 0 ? "On this month's statements" : "Nothing left to pay this month"}
+          detail={outstanding > 0 ? t.dashboard.kpis.billsToPayHint : t.dashboard.kpis.nothingToPay}
         />
       )}
     </div>
@@ -190,32 +189,33 @@ function Breakdowns({ data }: { data: SummaryView }) {
   const { t } = useI18n();
   const income = data.cashFlow.income;
   const fixedBillsTotal = data.fixedBills.reduce((sum, line) => sum + line.total, 0);
+  const labels = t.dashboard.breakdowns;
 
   return (
     <div className="grid items-start gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))]">
       <Card className="gap-3 p-4">
-        <CardKicker>Day-to-day spending</CardKicker>
-        <CategoryBars lines={data.expenses} emptyMessage="No day-to-day spending in this period." />
+        <CardKicker>{labels.dayToDay}</CardKicker>
+        <CategoryBars lines={data.expenses} emptyMessage={labels.noDayToDay} />
       </Card>
 
       <Card className="gap-3 p-4">
-        <CardKicker>Card statements</CardKicker>
+        <CardKicker>{labels.cardStatements}</CardKicker>
         <CardStatementsList lines={data.cards} />
       </Card>
 
       <Card className="gap-3 p-4">
-        <CardKicker>Fixed bills</CardKicker>
+        <CardKicker>{labels.fixedBills}</CardKicker>
         <BreakdownTable
           rows={data.fixedBills}
           rowKey={(line) => line.category.id}
-          emptyMessage="No fixed bills in this period."
+          emptyMessage={labels.noFixedBills}
           columns={[
-            { header: "Bill", render: (line) => line.category.name },
-            { header: "Amount", align: "right", render: (line) => formatMoneyWithMinus(line.total) },
-            { header: "Of money in", align: "right", render: (line) => share(line.share) },
+            { header: labels.bill, render: (line) => line.category.name },
+            { header: t.fields.amount, align: "right", render: (line) => formatMoneyWithMinus(line.total) },
+            { header: labels.ofIncome, align: "right", render: (line) => share(line.share) },
           ]}
           footer={[
-            "Total",
+            t.common.total,
             formatMoneyWithMinus(fixedBillsTotal),
             share(income > 0 ? fixedBillsTotal / income : 0),
           ]}
@@ -223,44 +223,44 @@ function Breakdowns({ data }: { data: SummaryView }) {
       </Card>
 
       <Card className="gap-3 p-4">
-        <CardKicker>Money in & savings</CardKicker>
+        <CardKicker>{labels.incomeAndSavings}</CardKicker>
         <BreakdownTable
           rows={[...data.income, ...data.savings]}
           rowKey={(line) => line.category.id}
-          emptyMessage="No income or savings in this period."
+          emptyMessage={labels.noIncomeOrSavings}
           columns={[
-            { header: "Category", render: (line) => line.category.name },
-            { header: "Amount", align: "right", render: (line) => formatMoneyWithMinus(line.total) },
-            { header: "Of money in", align: "right", render: (line) => share(line.share) },
+            { header: t.fields.category, render: (line) => line.category.name },
+            { header: t.fields.amount, align: "right", render: (line) => formatMoneyWithMinus(line.total) },
+            { header: labels.ofIncome, align: "right", render: (line) => share(line.share) },
           ]}
         />
       </Card>
 
       <Card className="gap-3 p-4">
-        <CardKicker>How day-to-day was paid</CardKicker>
+        <CardKicker>{labels.howPaid}</CardKicker>
         <BreakdownTable
           rows={data.paymentMethods.filter((line) => line.total !== 0)}
           rowKey={(line) => line.paymentMethod ?? "none"}
-          emptyMessage="No day-to-day spending in this period."
+          emptyMessage={labels.noDayToDay}
           columns={[
-            { header: "Method", render: (line) => paymentMethodLabel(line.paymentMethod, t) },
-            { header: "Amount", align: "right", render: (line) => formatMoneyWithMinus(line.total) },
-            { header: "Of money in", align: "right", render: (line) => share(line.share) },
+            { header: labels.method, render: (line) => paymentMethodLabel(line.paymentMethod, t) },
+            { header: t.fields.amount, align: "right", render: (line) => formatMoneyWithMinus(line.total) },
+            { header: labels.ofIncome, align: "right", render: (line) => share(line.share) },
           ]}
         />
       </Card>
 
       <Card className="gap-3 p-4">
-        <CardKicker>From which account</CardKicker>
+        <CardKicker>{labels.fromWhichAccount}</CardKicker>
         <BreakdownTable
           rows={data.accounts}
           rowKey={(line) => line.card?.id ?? "none"}
-          emptyMessage="No day-to-day spending in this period."
+          emptyMessage={labels.noDayToDay}
           columns={[
-            { header: "Account", render: (line) => line.card?.nickname ?? "Cash & not informed" },
-            { header: "Total", align: "right", render: (line) => formatMoneyWithMinus(line.total) },
-            { header: "Debit", align: "right", render: (line) => formatMoneyWithMinus(line.debit) },
-            { header: "Credit", align: "right", render: (line) => formatMoneyWithMinus(line.credit) },
+            { header: t.fields.account, render: (line) => line.card?.nickname ?? labels.cashAndNotInformed },
+            { header: t.common.total, align: "right", render: (line) => formatMoneyWithMinus(line.total) },
+            { header: labels.debit, align: "right", render: (line) => formatMoneyWithMinus(line.debit) },
+            { header: labels.credit, align: "right", render: (line) => formatMoneyWithMinus(line.credit) },
           ]}
         />
       </Card>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/shared/lib/cn";
-import { formatYearMonth } from "@/shared/lib/dates";
 import { formatAmount, formatMoney } from "@/shared/lib/money";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import type { AnnualView } from "@/features/reports/types";
 
 interface YearTrendChartProps {
@@ -16,6 +16,7 @@ interface YearTrendChartProps {
  * drawn as outlines so the difference never rests on color alone.
  */
 export function YearTrendChart({ annual, selectedMonth, onSelect }: YearTrendChartProps) {
+  const { t } = useI18n();
   const [hovered, setHovered] = useState<string | null>(null);
   const largest = Math.max(...annual.months.map((month) => month.cashFlow.totalOut), 1);
 
@@ -38,7 +39,7 @@ export function YearTrendChart({ annual, selectedMonth, onSelect }: YearTrendCha
               onFocus={() => setHovered(month)}
               onBlur={() => setHovered(null)}
               aria-pressed={isSelected}
-              aria-label={`${formatYearMonth(month)}: ${formatMoney(cashFlow.totalOut)} out${isProjected ? ", projected" : ""}`}
+              aria-label={t.dashboard.trend.bar(month, formatMoney(cashFlow.totalOut), isProjected)}
               className="relative flex h-full min-w-0 flex-1 cursor-pointer items-end justify-center rounded-t-md border-0 bg-transparent p-0 hover:bg-ink/4"
             >
               {showValue && cashFlow.totalOut > 0 && (
@@ -73,22 +74,22 @@ export function YearTrendChart({ annual, selectedMonth, onSelect }: YearTrendCha
               month === selectedMonth ? "font-semibold text-ink" : "text-neutral-500",
             )}
           >
-            {formatYearMonth(month, "short")}
+            {t.dates.monthShort(month)}
           </span>
         ))}
       </div>
       <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-ink/60">
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="inline-block size-2.5 rounded-sm bg-neutral-600" />
-          Happened
+          {t.dashboard.trend.happened}
         </span>
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="inline-block size-2.5 rounded-sm border border-neutral-600" />
-          Projection
+          {t.dashboard.trend.projection}
         </span>
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="inline-block size-2.5 rounded-sm bg-accent" />
-          Selected month
+          {t.dashboard.trend.selected}
         </span>
       </div>
     </div>

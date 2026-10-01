@@ -171,6 +171,86 @@ export const en = {
     },
   },
 
+  // The spreadsheet's panorama: how money came in and left the account.
+  cashFlow: {
+    income: "Money in",
+    fixedBills: "Fixed bills",
+    cardBills: "Card bills",
+    cashExpenses: "Paid now",
+    creditPurchases: "On cards",
+    savings: "Savings",
+    totalOut: "Total out",
+    leftover: "Left over",
+  },
+
+  dashboard: {
+    periodModes: { MONTH: "Month", YEAR: "Year", ALL: "All time" },
+    period: "Period",
+    allTime: "All time",
+    monthIntro: "Where the month's money came from and where it went.",
+    periodIntro: "Only what already happened — projections stay out of these totals.",
+    projectedNotice: (month: string) =>
+      `${monthYear(month)} hasn't happened yet: fixed bills and card statements below are projections, and card bills count at their expected value.`,
+    loadFailed: "Couldn't load this period.",
+    yearByMonth: (year: number) => `${year} month by month`,
+    yearByMonthHint: "Money that left the account · pick a month to see it",
+    shortBy: "Short by",
+    leftOver: "Left over",
+    ofIncome: (income: string) => `of ${income} that came in`,
+    nothingCameIn: "Nothing came in during this period.",
+    logTransaction: "Log a transaction",
+    nothingRecorded:
+      "Nothing recorded in this period yet. Log transactions or add what repeats every month, and this fills itself in.",
+    shareOfIncome: (share: string) => `${share} of money in`,
+    kpis: {
+      saved: "Saved",
+      takenFromSavings: (amount: string) => `${amount} taken back out of savings`,
+      putAside: (amount: string) => `${amount} put aside`,
+      committed: "Committed",
+      leftTheAccount: (amount: string) => `${amount} left the account`,
+      chargedToCards: "Charged to cards",
+      chargedToCardsHint: "Leaves the account when those statements are paid",
+      billsToPay: "Card bills still to pay",
+      billsToPayHint: "On this month's statements",
+      nothingToPay: "Nothing left to pay this month",
+    },
+    breakdowns: {
+      dayToDay: "Day-to-day spending",
+      noDayToDay: "No day-to-day spending in this period.",
+      cardStatements: "Card statements",
+      fixedBills: "Fixed bills",
+      noFixedBills: "No fixed bills in this period.",
+      bill: "Bill",
+      ofIncome: "Of money in",
+      incomeAndSavings: "Money in & savings",
+      noIncomeOrSavings: "No income or savings in this period.",
+      howPaid: "How day-to-day was paid",
+      method: "Method",
+      fromWhichAccount: "From which account",
+      cashAndNotInformed: "Cash & not informed",
+      debit: "Debit",
+      credit: "Credit",
+    },
+    bridgeLabel: "Where the money went",
+    cardStatement: {
+      composition: (carried: string, newCharges: string) =>
+        `${carried} carried in + ${newCharges} new`,
+      paid: (amount: string) => `paid ${amount}`,
+    },
+    categorySplit: {
+      both: (cash: string, credit: string) => `${cash} paid now · ${credit} on cards`,
+      allOnCards: "All on cards",
+      allPaidNow: "All paid now",
+    },
+    trend: {
+      bar: (month: string, amount: string, projected: boolean) =>
+        `${monthYear(month)}: ${amount} out${projected ? ", projected" : ""}`,
+      happened: "Happened",
+      projection: "Projection",
+      selected: "Selected month",
+    },
+  },
+
   controls: {
     previousMonth: "Previous month",
     nextMonth: "Next month",

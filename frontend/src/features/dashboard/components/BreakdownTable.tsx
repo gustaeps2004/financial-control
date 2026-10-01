@@ -33,7 +33,10 @@ export function BreakdownTable<Row>({
       <Table>
         <TableHead>
           {columns.map((column) => (
-            <Th key={column.header} className={cn(column.align === "right" && "text-right")}>
+            <Th
+              key={column.header}
+              className={cn(column.align === "right" && "text-right whitespace-nowrap")}
+            >
               {column.header}
             </Th>
           ))}

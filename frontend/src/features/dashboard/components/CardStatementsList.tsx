@@ -1,4 +1,5 @@
 import { formatAmount, formatMoney } from "@/shared/lib/money";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import type { SummaryView } from "@/features/reports/types";
 
 interface CardStatementsListProps {
@@ -11,8 +12,10 @@ interface CardStatementsListProps {
  * statement is made up.
  */
 export function CardStatementsList({ lines }: CardStatementsListProps) {
+  const { t } = useI18n();
+
   if (lines.length === 0) {
-    return <p className="m-0 text-[12.5px] text-ink/55">No cards yet.</p>;
+    return <p className="m-0 text-[12.5px] text-ink/55">{t.cards.none}</p>;
   }
 
   const total = lines.reduce((sum, line) => sum + line.statementTotal, 0);
@@ -33,23 +36,30 @@ export function CardStatementsList({ lines }: CardStatementsListProps) {
             />
             <span className="min-w-0 flex-1 truncate">
               {line.card.nickname}
-              {line.card.deleted && <span className="text-ink/45"> (removed)</span>}
+              {line.card.deleted && <span className="text-ink/45"> {t.cards.removed}</span>}
             </span>
             <span className="tabular-nums">{formatMoney(line.statementTotal)}</span>
           </div>
           <div className="flex flex-wrap justify-between gap-x-3 pl-[26px] text-[11.5px] text-ink/50">
             <span className="tabular-nums">
-              {formatAmount(line.carried)} carried in + {formatAmount(line.newCharges)} new
+              {t.dashboard.cardStatement.composition(
+                formatAmount(line.carried),
+                formatAmount(line.newCharges),
+              )}
             </span>
-            <span className="tabular-nums">paid {formatMoney(line.paid)}</span>
+            <span className="tabular-nums">
+              {t.dashboard.cardStatement.paid(formatMoney(line.paid))}
+            </span>
           </div>
         </li>
       ))}
       <li className="flex justify-between gap-3 pt-2 text-[13px] font-medium">
-        <span>Total</span>
+        <span>{t.common.total}</span>
         <span className="tabular-nums">
           {formatMoney(total)}
-          <span className="ml-2 font-normal text-ink/50">paid {formatMoney(paid)}</span>
+          <span className="ml-2 font-normal text-ink/50">
+            {t.dashboard.cardStatement.paid(formatMoney(paid))}
+          </span>
         </span>
       </li>
     </ul>

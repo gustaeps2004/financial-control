@@ -1,4 +1,5 @@
 import { formatMoney, formatPercent } from "@/shared/lib/money";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import type { SplitCategoryLine } from "@/features/reports/types";
 
 interface CategoryBarsProps {
@@ -11,6 +12,8 @@ interface CategoryBarsProps {
  * accent (shading bars by size would spend color re-encoding their length).
  */
 export function CategoryBars({ lines, emptyMessage }: CategoryBarsProps) {
+  const { t } = useI18n();
+
   if (lines.length === 0) {
     return <p className="m-0 text-[12.5px] text-ink/55">{emptyMessage}</p>;
   }
@@ -33,11 +36,11 @@ export function CategoryBars({ lines, emptyMessage }: CategoryBarsProps) {
           </span>
           <span className="text-[11.5px] text-ink/50">
             {line.credit > 0 && line.cash > 0
-              ? `${formatMoney(line.cash)} paid now · ${formatMoney(line.credit)} on cards`
+              ? t.dashboard.categorySplit.both(formatMoney(line.cash), formatMoney(line.credit))
               : line.credit > 0
-                ? "All on cards"
-                : "All paid now"}
-            {line.share > 0 && ` · ${formatPercent(line.share)} of money in`}
+                ? t.dashboard.categorySplit.allOnCards
+                : t.dashboard.categorySplit.allPaidNow}
+            {line.share > 0 && ` · ${t.dashboard.shareOfIncome(formatPercent(line.share))}`}
           </span>
         </li>
       ))}

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { cn } from "@/shared/lib/cn";
 import { formatMoney, formatPercent, formatSignedMoney } from "@/shared/lib/money";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import type { CashFlow } from "@/features/reports/types";
 
 interface Step {
-  key: string;
-  label: string;
+  // Also names the step: its label is the cash flow's own.
+  key: keyof CashFlow;
   // Signed effect on the account: money in positive, money out negative.
   delta: number;
   // Totals start from zero; steps continue from the running balance.
@@ -25,12 +26,12 @@ const SHORT = "var(--color-danger)";
 
 function stepsOf(cashFlow: CashFlow): Step[] {
   return [
-    { key: "income", label: "Money in", delta: cashFlow.income, kind: "total" },
-    { key: "fixed", label: "Fixed bills", delta: -cashFlow.fixedBills, kind: "step" },
-    { key: "cards", label: "Card bills", delta: -cashFlow.cardBills, kind: "step" },
-    { key: "cash", label: "Paid now", delta: -cashFlow.cashExpenses, kind: "step" },
-    { key: "saved", label: "Savings", delta: -cashFlow.savings, kind: "step" },
-    { key: "left", label: "Left over", delta: cashFlow.leftover, kind: "total" },
+    { key: "income", delta: cashFlow.income, kind: "total" },
+    { key: "fixedBills", delta: -cashFlow.fixedBills, kind: "step" },
+    { key: "cardBills", delta: -cashFlow.cardBills, kind: "step" },
+    { key: "cashExpenses", delta: -cashFlow.cashExpenses, kind: "step" },
+    { key: "savings", delta: -cashFlow.savings, kind: "step" },
+    { key: "leftover", delta: cashFlow.leftover, kind: "total" },
   ];
 }
 
@@ -54,6 +55,7 @@ function placeSteps(steps: Step[]): Array<Step & { from: number; to: number }> {
  * saiu − Guardado", drawn.
  */
 export function CashFlowBridge({ cashFlow }: CashFlowBridgeProps) {
+  const { t } = useI18n();
   const [active, setActive] = useState<string | null>(null);
   const steps = stepsOf(cashFlow);
 
@@ -66,7 +68,7 @@ export function CashFlowBridge({ cashFlow }: CashFlowBridgeProps) {
 
   return (
     <div>
-      <div className="relative h-[168px]" role="list" aria-label="Where the money went">
+      <div className="relative h-[168px]" role="list" aria-label={t.dashboard.bridgeLabel}>
         {/* Zero baseline */}
         <span
           aria-hidden
@@ -78,7 +80,7 @@ export function CashFlowBridge({ cashFlow }: CashFlowBridgeProps) {
             const low = Math.min(bar.from, bar.to);
             const high = Math.max(bar.from, bar.to);
             const goesDown = bar.to < bar.from;
-            const isLeftover = bar.key === "left";
+            const isLeftover = bar.key === "leftover";
             const color = isLeftover && bar.to < 0 ? SHORT : bar.kind === "total" ? ACCENT : STEP;
             const share = cashFlow.income > 0 ? Math.abs(bar.delta) / cashFlow.income : null;
             const next = bars[index + 1];
@@ -87,7 +89,7 @@ export function CashFlowBridge({ cashFlow }: CashFlowBridgeProps) {
                 key={bar.key}
                 role="listitem"
                 tabIndex={0}
-                aria-label={`${bar.label}: ${formatSignedMoney(bar.delta)}`}
+                aria-label={`${t.cashFlow[bar.key]}: ${formatSignedMoney(bar.delta)}`}
                 onPointerEnter={() => setActive(bar.key)}
                 onPointerLeave={() => setActive(null)}
                 onFocus={() => setActive(bar.key)}
@@ -126,8 +128,10 @@ export function CashFlowBridge({ cashFlow }: CashFlowBridgeProps) {
                   >
                     <b className="block font-semibold tabular-nums">{formatSignedMoney(bar.delta)}</b>
                     <span className="text-ink/60">
-                      {bar.label}
-                      {share !== null && bar.key !== "income" && ` · ${formatPercent(share)} of money in`}
+                      {t.cashFlow[bar.key]}
+                      {share !== null &&
+                        bar.key !== "income" &&
+                        ` · ${t.dashboard.shareOfIncome(formatPercent(share))}`}
                     </span>
                   </span>
                 )}
@@ -141,7 +145,7 @@ export function CashFlowBridge({ cashFlow }: CashFlowBridgeProps) {
       <dl className="m-0 mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 border-t border-divider pt-2.5 text-[12.5px] sm:hidden">
         {bars.map((bar) => (
           <div key={bar.key} className="contents">
-            <dt className="text-ink/60">{bar.label}</dt>
+            <dt className="text-ink/60">{t.cashFlow[bar.key]}</dt>
             <dd className={cn("m-0 text-right tabular-nums", bar.kind === "total" && "font-medium")}>
               {bar.kind === "total" && bar.delta >= 0
                 ? formatMoney(bar.delta)
@@ -153,7 +157,7 @@ export function CashFlowBridge({ cashFlow }: CashFlowBridgeProps) {
       <div className="mt-2.5 hidden grid-cols-6 border-t border-divider pt-2 sm:grid">
         {bars.map((bar) => (
           <div key={bar.key} className="flex min-w-0 flex-col items-center gap-0.5 px-0.5 text-center">
-            <span className="text-[11.5px] text-ink/60">{bar.label}</span>
+            <span className="text-[11.5px] text-ink/60">{t.cashFlow[bar.key]}</span>
             <span
               className={cn(
                 "text-[12.5px] tabular-nums",
