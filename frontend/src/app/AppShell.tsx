@@ -20,7 +20,7 @@ const NAV_ITEMS = [
   { to: "/app/settings", label: "Settings", Icon: Gear },
 ];
 
-export function AppShell() {
+function UserChip({ className }: { className?: string }) {
   const { displayName, logout } = useAuth();
   const initials = useInitials();
   const navigate = useNavigate();
@@ -31,18 +31,42 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex min-h-screen flex-wrap items-stretch">
-      <aside className="flex w-50 flex-none flex-col gap-5 bg-sidebar p-3">
-        <div className="px-2 py-0.5 text-[17px] font-semibold">Tally</div>
+    <div className={cn("items-center gap-2 rounded-md bg-ink/3 p-2", className)}>
+      <span className="grid size-[26px] flex-none place-items-center rounded-full bg-accent-800 text-[11px] font-semibold">
+        {initials}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-[12px] text-neutral-400">{displayName}</span>
+      <button
+        type="button"
+        onClick={handleSignOut}
+        aria-label="Sign out"
+        className="cursor-pointer border-0 bg-transparent p-0 text-neutral-600 hover:text-ink"
+      >
+        <SignOut size={15} />
+      </button>
+    </div>
+  );
+}
 
-        <nav className="flex flex-col gap-0.5">
+// A sidebar from md up; on phones it folds into a top bar whose nav scrolls
+// sideways, so the page content starts right below it.
+export function AppShell() {
+  return (
+    <div className="flex min-h-screen flex-col md:flex-row">
+      <aside className="flex flex-none flex-col gap-2.5 bg-sidebar p-3 md:sticky md:top-0 md:h-screen md:w-50 md:gap-5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="px-2 py-0.5 text-[17px] font-semibold">Tally</div>
+          <UserChip className="flex max-w-[60%] md:hidden" />
+        </div>
+
+        <nav className="-mx-3 flex gap-0.5 overflow-x-auto px-3 md:mx-0 md:flex-col md:overflow-visible md:px-0">
           {NAV_ITEMS.map(({ to, label, Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] font-medium no-underline",
+                  "flex flex-none items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] font-medium whitespace-nowrap no-underline",
                   "hover:bg-ink/7",
                   isActive ? "bg-accent/16 text-ink" : "text-neutral-500",
                 )
@@ -54,25 +78,10 @@ export function AppShell() {
           ))}
         </nav>
 
-        <div className="mt-auto flex items-center gap-2 rounded-md bg-ink/3 p-2">
-          <span className="grid size-[26px] flex-none place-items-center rounded-full bg-accent-800 text-[11px] font-semibold">
-            {initials}
-          </span>
-          <span className="min-w-0 flex-1 truncate text-[12px] text-neutral-400">
-            {displayName}
-          </span>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            aria-label="Sign out"
-            className="cursor-pointer border-0 bg-transparent p-0 text-neutral-600 hover:text-ink"
-          >
-            <SignOut size={15} />
-          </button>
-        </div>
+        <UserChip className="mt-auto hidden md:flex" />
       </aside>
 
-      <main className="min-w-0 flex-1 basis-[460px] px-6.5 pt-5.5 pb-14">
+      <main className="min-w-0 flex-1 px-4 pt-5 pb-14 md:px-6.5 md:pt-5.5">
         <Outlet />
       </main>
     </div>
