@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button, buttonVariants } from "@/shared/ui/Button";
 import { Field } from "@/shared/ui/Field";
 import { Input } from "@/shared/ui/Input";
+import { PasswordInput } from "@/shared/ui/PasswordInput";
 import { Checkbox } from "@/shared/ui/Checkbox";
 import { errorMessage } from "@/lib/i18n/error-message";
 import { useI18n } from "@/lib/i18n/i18n-context";
@@ -71,9 +72,8 @@ export function LoginPage() {
           />
         </Field>
         <Field label={t.fields.password} htmlFor="login-password">
-          <Input
+          <PasswordInput
             id="login-password"
-            type="password"
             autoComplete="current-password"
             required
             value={password}

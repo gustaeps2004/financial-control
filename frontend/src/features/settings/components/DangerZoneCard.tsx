@@ -4,7 +4,7 @@ import { WarningCircle } from "@phosphor-icons/react";
 import { Card, CardKicker } from "@/shared/ui/Card";
 import { Button } from "@/shared/ui/Button";
 import { Field } from "@/shared/ui/Field";
-import { Input } from "@/shared/ui/Input";
+import { PasswordInput } from "@/shared/ui/PasswordInput";
 import { errorMessage } from "@/lib/i18n/error-message";
 import { useI18n } from "@/lib/i18n/i18n-context";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -43,9 +43,8 @@ export function DangerZoneCard() {
         {isConfirming ? (
           <form onSubmit={handleDelete} className="flex flex-wrap items-end gap-2">
             <Field label={labels.confirmLabel} htmlFor="delete-password" className="flex-[0_1_240px]">
-              <Input
+              <PasswordInput
                 id="delete-password"
-                type="password"
                 autoComplete="current-password"
                 required
                 value={password}

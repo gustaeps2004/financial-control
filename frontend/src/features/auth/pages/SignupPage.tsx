@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/shared/ui/Button";
 import { Field } from "@/shared/ui/Field";
 import { Input } from "@/shared/ui/Input";
+import { PasswordInput } from "@/shared/ui/PasswordInput";
 import { Checkbox } from "@/shared/ui/Checkbox";
 import { cn } from "@/shared/lib/cn";
 import { errorMessage } from "@/lib/i18n/error-message";
@@ -84,9 +85,8 @@ export function SignupPage() {
           />
         </Field>
         <Field label={t.fields.password} htmlFor="signup-password" className="mb-0">
-          <Input
+          <PasswordInput
             id="signup-password"
-            type="password"
             placeholder={t.auth.signup.passwordPlaceholder}
             autoComplete="new-password"
             minLength={8}

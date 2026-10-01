@@ -465,6 +465,8 @@ export const ptBR: Messages = {
     thisYear: "Este ano",
     monthOf: (field) => `${field}: mês`,
     yearOf: (field) => `${field}: ano`,
+    showPassword: "Mostrar senha",
+    hidePassword: "Ocultar senha",
   },
 
   auth: {

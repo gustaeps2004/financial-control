@@ -471,6 +471,8 @@ export const en = {
     // The two halves of a month picker, named after its field.
     monthOf: (field: string) => `${field}: month`,
     yearOf: (field: string) => `${field}: year`,
+    showPassword: "Show password",
+    hidePassword: "Hide password",
   },
 
   auth: {

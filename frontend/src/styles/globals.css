@@ -87,4 +87,9 @@
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
+
+  /* Edge adds its own reveal button to password fields; PasswordInput has one. */
+  input::-ms-reveal {
+    display: none;
+  }
 }
