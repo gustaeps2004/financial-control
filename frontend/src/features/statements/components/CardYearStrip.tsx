@@ -1,9 +1,10 @@
 import { Card } from "@/shared/ui/Card";
 import { cn } from "@/shared/lib/cn";
-import { currentYearMonth, formatYearMonth } from "@/shared/lib/dates";
+import { currentYearMonth } from "@/shared/lib/dates";
 import { formatAmount, formatMoney } from "@/shared/lib/money";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import type { Statement, StatementCard } from "@/features/reports/types";
-import { STATUS_CLASSES, STATUS_LABELS } from "../lib/status";
+import { STATUS_CLASSES } from "../lib/status";
 
 interface CardYearStripProps {
   card: StatementCard;
@@ -13,6 +14,7 @@ interface CardYearStripProps {
 }
 
 export function CardYearStrip({ card, statements, total, onOpen }: CardYearStripProps) {
+  const { t } = useI18n();
   const thisMonth = currentYearMonth();
   const largest = Math.max(...statements.map((statement) => statement.total), 1);
 
@@ -27,14 +29,13 @@ export function CardYearStrip({ card, statements, total, onOpen }: CardYearStrip
         </span>
         <span className="text-[14px] font-medium">
           {card.nickname}
-          {card.deleted && <span className="text-ink/45"> (removed)</span>}
+          {card.deleted && <span className="text-ink/45"> {t.cards.removed}</span>}
         </span>
         <span className="text-[12px] text-ink/50">
-          closes day {card.closingDay}
-          {card.dueDay ? ` · due day ${card.dueDay}` : ""}
+          {t.statements.cardDays(card.closingDay, card.dueDay)}
         </span>
         <span className="ml-auto text-[12.5px] text-ink/60 tabular-nums">
-          {formatMoney(total)} this year
+          {t.statements.cardYearTotal(formatMoney(total))}
         </span>
       </div>
 
@@ -46,7 +47,12 @@ export function CardYearStrip({ card, statements, total, onOpen }: CardYearStrip
               key={statement.month}
               type="button"
               onClick={() => onOpen(statement.month)}
-              aria-label={`${card.nickname}, ${formatYearMonth(statement.month)} statement: ${formatMoney(statement.total)}, ${STATUS_LABELS[statement.status]}`}
+              aria-label={t.statements.cell(
+                card.nickname,
+                statement.month,
+                formatMoney(statement.total),
+                t.statements.status[statement.status],
+              )}
               className={cn(
                 "flex min-w-0 cursor-pointer flex-col items-start gap-1 rounded-md border px-2 pt-1.5 pb-2 text-left",
                 "hover:border-ink/30 hover:bg-ink/4",
@@ -59,7 +65,7 @@ export function CardYearStrip({ card, statements, total, onOpen }: CardYearStrip
                   isThisMonth ? "font-semibold text-ink" : "text-neutral-500",
                 )}
               >
-                {formatYearMonth(statement.month, "short")}
+                {t.dates.monthShort(statement.month)}
               </span>
               <span
                 className={cn(
@@ -82,7 +88,7 @@ export function CardYearStrip({ card, statements, total, onOpen }: CardYearStrip
                     STATUS_CLASSES[statement.status],
                   )}
                 >
-                  {STATUS_LABELS[statement.status]}
+                  {t.statements.status[statement.status]}
                 </span>
               )}
             </button>

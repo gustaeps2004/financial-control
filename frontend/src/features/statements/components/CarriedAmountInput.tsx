@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Field } from "@/shared/ui/Field";
 import { Input } from "@/shared/ui/Input";
-import { formatYearMonth, todayIso } from "@/shared/lib/dates";
+import { todayIso } from "@/shared/lib/dates";
 import { formatMoneyInput, parseMoneyInput } from "@/shared/lib/money";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import type { CardAccount } from "@/features/cards/types";
 import { statementMonthFor } from "@/features/cards/lib/statement-month";
 import { useCardStatement } from "@/features/reports/hooks/use-reports";
@@ -20,6 +21,7 @@ interface CarriedAmountInputProps {
  * of older purchases, subscriptions (the spreadsheet's "valor inicial").
  */
 export function CarriedAmountInput({ card, month }: CarriedAmountInputProps) {
+  const { t } = useI18n();
   const statementMonth = month ?? statementMonthFor(card, todayIso());
   const statement = useCardStatement(
     statementMonth ? { cardId: card.id, month: statementMonth } : null,
@@ -38,12 +40,12 @@ export function CarriedAmountInput({ card, month }: CarriedAmountInputProps) {
       setError(null);
       await setAdjustment(card.id, statementMonth!, amount);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't save that amount.");
+      setError(errorMessage(err, t, t.statements.carried.failed));
     }
   }
 
   return (
-    <Field label={`Already on the ${formatYearMonth(statementMonth)} statement`}>
+    <Field label={t.statements.carried.label(statementMonth)}>
       <Input
         // Remount once the saved value arrives, so the field shows it.
         key={statement.data ? `loaded-${current}` : "loading"}

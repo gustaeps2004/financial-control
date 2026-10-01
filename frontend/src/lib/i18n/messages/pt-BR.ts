@@ -25,6 +25,12 @@ function inlineMonthYear(yearMonth: string): string {
   return monthYear(yearMonth).toLowerCase();
 }
 
+/** "06/10/2026". */
+function fullDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split("-");
+  return `${day}/${month}/${year}`;
+}
+
 export const ptBR: Messages = {
   dates: {
     months: MONTHS,
@@ -288,6 +294,71 @@ export const ptBR: Messages = {
       onStatement: (month) => `na fatura de ${inlineMonthYear(month)}`,
       automatic: "Automático",
       logActual: "Lançar valor real",
+    },
+  },
+
+  statements: {
+    title: "Faturas",
+    intro:
+      "A fatura de cada cartão, mês a mês: o que cada uma já traz, as parcelas que caem nela e o que você comprou neste ciclo.",
+    yearTotal: (total, year) => `${total} somando todos os cartões em ${year}.`,
+    loadFailed: "Não foi possível carregar as faturas.",
+    noCards: "Nenhum cartão ainda. Adicione os cartões que você usa para acompanhar as faturas.",
+    dialogTitle: (card, month) => `${card} · fatura de ${inlineMonthYear(month)}`,
+    status: {
+      OPEN: "Aberta",
+      CLOSED: "Fechada",
+      OVERDUE: "Vencida",
+      PAID: "Paga",
+      UPCOMING: "Futura",
+      EMPTY: "Vazia",
+    },
+    sentence: {
+      open: (closing, due) =>
+        `Recebendo compras até ${fullDate(closing)}${due ? `, vence em ${fullDate(due)}` : ""}.`,
+      closed: (closing, due) =>
+        `Fechou em ${fullDate(closing)}${due ? `, vence em ${fullDate(due)}` : ""}.`,
+      overdue: (due) =>
+        `Passou do vencimento${due ? ` (${fullDate(due)})` : ""} e não foi paga por completo.`,
+      paid: "Paga.",
+      upcoming: (closing, due) =>
+        `Fecha em ${fullDate(closing)}${due ? `, vence em ${fullDate(due)}` : ""}. As compras novas começam a cair nela quando a fatura atual fechar.`,
+      empty: "Nada cai nesta fatura.",
+    },
+    cardDays: (closingDay, dueDay) =>
+      `fecha dia ${closingDay}${dueDay ? ` · vence dia ${dueDay}` : ""}`,
+    cardYearTotal: (total) => `${total} neste ano`,
+    cell: (card, month, total, status) =>
+      `${card}, fatura de ${inlineMonthYear(month)}: ${total}, ${status}`,
+    detail: {
+      loadFailed: "Não foi possível carregar esta fatura.",
+      olderInstallments: "Parcelas de compras antigas",
+      purchases: "Compras nesta fatura",
+      recurring: "Cobranças recorrentes",
+      total: "Total da fatura",
+      paid: "Pago",
+      remaining: "Falta pagar",
+      carriedLabel: "Valor inicial (parcelas, assinaturas, tarifas)",
+      carriedHint: "Tudo o que já está nesta fatura e não foi lançado aqui.",
+      carriedFailed: "Não foi possível salvar o valor inicial.",
+      charges: "Nesta fatura",
+      noCharges: "Nenhuma compra cai nela.",
+      installmentShort: "Parc.",
+      recurringTag: "recorrente",
+      payments: "Pagamentos",
+      paidOn: (date) => `Pago em ${fullDate(date)}`,
+      deletePayment: (amount) => `Excluir pagamento de ${amount}`,
+      paidOnLabel: "Pago em",
+      register: "Registrar pagamento",
+      typeAmountPaid: "Digite o valor pago.",
+      registerFailed: "Não foi possível registrar o pagamento.",
+      deleteFailed: "Não foi possível excluir o pagamento.",
+      paymentNote:
+        "O pagamento é o que sai da sua conta — as compras já contaram como gasto quando você as fez.",
+    },
+    carried: {
+      label: (month) => `Já na fatura de ${inlineMonthYear(month)}`,
+      failed: "Não foi possível salvar esse valor.",
     },
   },
 

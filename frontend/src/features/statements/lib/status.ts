@@ -1,14 +1,5 @@
-import { formatDate } from "@/shared/lib/dates";
+import type { Messages } from "@/lib/i18n/messages/en";
 import type { Statement, StatementStatus } from "@/features/reports/types";
-
-export const STATUS_LABELS: Record<StatementStatus, string> = {
-  OPEN: "Open",
-  CLOSED: "Closed",
-  OVERDUE: "Overdue",
-  PAID: "Paid",
-  UPCOMING: "Upcoming",
-  EMPTY: "Nothing on it",
-};
 
 // Purple marks what needs attention now, red what is late; everything
 // settled or still far away stays quiet.
@@ -21,20 +12,20 @@ export const STATUS_CLASSES: Record<StatementStatus, string> = {
   EMPTY: "text-ink/35",
 };
 
-export function statusSentence(statement: Statement): string {
-  const due = statement.dueDate ? `due ${formatDate(statement.dueDate)}` : null;
+export function statusSentence(statement: Statement, t: Messages): string {
+  const sentence = t.statements.sentence;
   switch (statement.status) {
     case "OPEN":
-      return `Taking purchases until ${formatDate(statement.closingDate)}${due ? `, ${due}` : ""}.`;
+      return sentence.open(statement.closingDate, statement.dueDate);
     case "CLOSED":
-      return `Closed on ${formatDate(statement.closingDate)}${due ? `, ${due}` : ""}.`;
+      return sentence.closed(statement.closingDate, statement.dueDate);
     case "OVERDUE":
-      return `Past the due date${statement.dueDate ? ` (${formatDate(statement.dueDate)})` : ""} and not fully paid.`;
+      return sentence.overdue(statement.dueDate);
     case "PAID":
-      return "Paid.";
+      return sentence.paid;
     case "UPCOMING":
-      return `Closes on ${formatDate(statement.closingDate)}${due ? `, ${due}` : ""}. New purchases start landing on it once the current statement closes.`;
+      return sentence.upcoming(statement.closingDate, statement.dueDate);
     case "EMPTY":
-      return "Nothing lands on this statement.";
+      return sentence.empty;
   }
 }

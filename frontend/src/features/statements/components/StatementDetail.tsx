@@ -5,28 +5,27 @@ import { Field } from "@/shared/ui/Field";
 import { Input } from "@/shared/ui/Input";
 import { Table, TableBody, TableHead, TableRow, Td, Th } from "@/shared/ui/Table";
 import { cn } from "@/shared/lib/cn";
-import { formatDate, formatDayMonth, todayIso } from "@/shared/lib/dates";
+import { formatDayMonth, todayIso } from "@/shared/lib/dates";
 import { formatMoney, formatMoneyInput, parseMoneyInput } from "@/shared/lib/money";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCardStatement } from "@/features/reports/hooks/use-reports";
 import type { Statement } from "@/features/reports/types";
 import { useStatementActions } from "../hooks/use-statement-actions";
-import { STATUS_CLASSES, STATUS_LABELS, statusSentence } from "../lib/status";
+import { STATUS_CLASSES, statusSentence } from "../lib/status";
 
 interface StatementDetailProps {
   cardId: string;
   month: string;
 }
 
-function errorMessage(err: unknown, fallback: string): string {
-  return err instanceof ApiError ? err.message : fallback;
-}
-
 function Breakdown({ statement }: { statement: Statement }) {
+  const { t } = useI18n();
+  const labels = t.statements.detail;
   const rows: Array<[string, number]> = [
-    ["Installments of older purchases", statement.installments],
-    ["Purchases this cycle", statement.purchases],
-    ["Recurring charges", statement.recurring],
+    [labels.olderInstallments, statement.installments],
+    [labels.purchases, statement.purchases],
+    [labels.recurring, statement.recurring],
   ];
   return (
     <dl className="m-0 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-[13px]">
@@ -36,13 +35,13 @@ function Breakdown({ statement }: { statement: Statement }) {
           <dd className="m-0 text-right tabular-nums">{formatMoney(amount)}</dd>
         </div>
       ))}
-      <dt className="border-t border-divider pt-1 font-medium">Statement total</dt>
+      <dt className="border-t border-divider pt-1 font-medium">{labels.total}</dt>
       <dd className="m-0 border-t border-divider pt-1 text-right font-medium tabular-nums">
         {formatMoney(statement.total)}
       </dd>
-      <dt className="text-ink/60">Paid</dt>
+      <dt className="text-ink/60">{labels.paid}</dt>
       <dd className="m-0 text-right tabular-nums">{formatMoney(statement.paid)}</dd>
-      <dt className="text-ink/60">Still to pay</dt>
+      <dt className="text-ink/60">{labels.remaining}</dt>
       <dd
         className={cn(
           "m-0 text-right tabular-nums",
@@ -56,6 +55,8 @@ function Breakdown({ statement }: { statement: Statement }) {
 }
 
 export function StatementDetail({ cardId, month }: StatementDetailProps) {
+  const { t } = useI18n();
+  const labels = t.statements.detail;
   const detail = useCardStatement({ cardId, month });
   const { setAdjustment, registerPayment, removePayment } = useStatementActions();
   const [paidOn, setPaidOn] = useState(todayIso);
@@ -63,10 +64,14 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
   const [error, setError] = useState<string | null>(null);
 
   if (detail.error) {
-    return <p className="m-0 text-[13px] text-accent-300">{detail.error.message}</p>;
+    return (
+      <p className="m-0 text-[13px] text-accent-300">
+        {errorMessage(detail.error, t, labels.loadFailed)}
+      </p>
+    );
   }
   if (!detail.data) {
-    return <p className="m-0 text-[13px] text-ink/55">Loading…</p>;
+    return <p className="m-0 text-[13px] text-ink/55">{t.common.loading}</p>;
   }
 
   const { statement, charges } = detail.data;
@@ -79,20 +84,20 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
       setError(null);
       await setAdjustment(cardId, month, next);
     } catch (err) {
-      setError(errorMessage(err, "Couldn't save the carried amount."));
+      setError(errorMessage(err, t, labels.carriedFailed));
     }
   }
 
   async function handlePay(event: FormEvent) {
     event.preventDefault();
     const value = amount ? parseMoneyInput(amount) : suggestedPayment;
-    if (value <= 0) return setError("Type the amount paid.");
+    if (value <= 0) return setError(labels.typeAmountPaid);
     try {
       setError(null);
       await registerPayment(cardId, month, { paidOn, amount: value });
       setAmount("");
     } catch (err) {
-      setError(errorMessage(err, "Couldn't register the payment."));
+      setError(errorMessage(err, t, labels.registerFailed));
     }
   }
 
@@ -101,7 +106,7 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
       setError(null);
       await removePayment(paymentId);
     } catch (err) {
-      setError(errorMessage(err, "Couldn't delete the payment."));
+      setError(errorMessage(err, t, labels.deleteFailed));
     }
   }
 
@@ -111,13 +116,13 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
         <span
           className={cn("rounded px-1.5 text-[11px] leading-5", STATUS_CLASSES[statement.status])}
         >
-          {STATUS_LABELS[statement.status]}
+          {t.statements.status[statement.status]}
         </span>
-        <span className="text-[12.5px] text-ink/60">{statusSentence(statement)}</span>
+        <span className="text-[12.5px] text-ink/60">{statusSentence(statement, t)}</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Field label="Carried in (installments, subscriptions, fees)" htmlFor="statement-carried">
+        <Field label={labels.carriedLabel} htmlFor="statement-carried">
           <Input
             id="statement-carried"
             key={`carried-${statement.adjustment}`}
@@ -126,25 +131,23 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
             defaultValue={statement.adjustment ? formatMoneyInput(statement.adjustment) : ""}
             onBlur={(e) => void commitAdjustment(e.target.value)}
           />
-          <span className="mt-1 text-[11px] text-ink/50">
-            Anything already on this statement that wasn't logged here.
-          </span>
+          <span className="mt-1 text-[11px] text-ink/50">{labels.carriedHint}</span>
         </Field>
         <Breakdown statement={statement} />
       </div>
 
       <section className="flex flex-col gap-1.5">
-        <h5 className="m-0 text-[13px]">On this statement</h5>
+        <h5 className="m-0 text-[13px]">{labels.charges}</h5>
         {charges.length === 0 ? (
-          <p className="m-0 text-[12.5px] text-ink/50">No purchases land on it.</p>
+          <p className="m-0 text-[12.5px] text-ink/50">{labels.noCharges}</p>
         ) : (
           <div className="max-h-[260px] overflow-y-auto">
             <Table>
               <TableHead>
-                <Th className="w-14">Date</Th>
-                <Th>Description</Th>
-                <Th className="w-16">Inst.</Th>
-                <Th className="text-right">Amount</Th>
+                <Th className="w-14">{t.fields.date}</Th>
+                <Th>{t.fields.description}</Th>
+                <Th className="w-16">{labels.installmentShort}</Th>
+                <Th className="text-right">{t.fields.amount}</Th>
               </TableHead>
               <TableBody>
                 {charges.map((charge) => (
@@ -155,7 +158,7 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
                     <Td className="text-[13px]">
                       {charge.description ?? charge.category?.name ?? "—"}
                       {charge.source === "RECURRING" && (
-                        <span className="ml-1.5 text-[11px] text-ink/45">recurring</span>
+                        <span className="ml-1.5 text-[11px] text-ink/45">{labels.recurringTag}</span>
                       )}
                     </Td>
                     <Td className="text-[12px] tabular-nums text-ink/55">
@@ -171,14 +174,14 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h5 className="m-0 text-[13px]">Payments</h5>
+        <h5 className="m-0 text-[13px]">{labels.payments}</h5>
         {statement.payments.map((payment) => (
           <div key={payment.id} className="flex items-center gap-2 text-[13px]">
-            <span className="text-ink/60">Paid on {formatDate(payment.paidOn)}</span>
+            <span className="text-ink/60">{labels.paidOn(payment.paidOn)}</span>
             <span className="ml-auto tabular-nums">{formatMoney(payment.amount)}</span>
             <button
               type="button"
-              aria-label={`Delete payment of ${formatMoney(payment.amount)}`}
+              aria-label={labels.deletePayment(formatMoney(payment.amount))}
               onClick={() => void handleRemovePayment(payment.id)}
               className="inline-grid size-7 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-neutral-500 hover:bg-ink/7 hover:text-ink"
             >
@@ -187,7 +190,7 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
           </div>
         ))}
         <form onSubmit={handlePay} className="flex flex-wrap items-end gap-2">
-          <Field label="Paid on" htmlFor="payment-date" className="flex-[0_1_160px]">
+          <Field label={labels.paidOnLabel} htmlFor="payment-date" className="flex-[0_1_160px]">
             <Input
               id="payment-date"
               type="date"
@@ -196,7 +199,7 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
               onChange={(e) => setPaidOn(e.target.value)}
             />
           </Field>
-          <Field label="Amount" htmlFor="payment-amount" className="flex-[0_1_140px]">
+          <Field label={t.fields.amount} htmlFor="payment-amount" className="flex-[0_1_140px]">
             <Input
               id="payment-amount"
               inputMode="decimal"
@@ -206,13 +209,10 @@ export function StatementDetail({ cardId, month }: StatementDetailProps) {
             />
           </Field>
           <Button type="submit" variant="primary" disabled={suggestedPayment <= 0 && !amount}>
-            Register payment
+            {labels.register}
           </Button>
         </form>
-        <p className="m-0 text-[11.5px] text-ink/50">
-          The payment is what leaves your account — the purchases were already counted as
-          spending when you made them.
-        </p>
+        <p className="m-0 text-[11.5px] text-ink/50">{labels.paymentNote}</p>
       </section>
 
       {error && <p className="m-0 text-[12px] text-accent-300">{error}</p>}

@@ -25,6 +25,12 @@ function monthYear(yearMonth: string): string {
   return `${MONTHS[month - 1]} ${year}`;
 }
 
+/** "6 Oct 2026". */
+function fullDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return `${day} ${MONTHS_SHORT[month! - 1]} ${year}`;
+}
+
 export const en = {
   dates: {
     months: MONTHS,
@@ -293,6 +299,71 @@ export const en = {
       onStatement: (month: string) => `on the ${monthYear(month)} statement`,
       automatic: "Automatic",
       logActual: "Log actual",
+    },
+  },
+
+  statements: {
+    title: "Statements",
+    intro:
+      "Every card's statement, month by month: what each one already carries, the installments landing on it and what you bought this cycle.",
+    yearTotal: (total: string, year: number) => `${total} across all cards in ${year}.`,
+    loadFailed: "Couldn't load the statements.",
+    noCards: "No cards yet. Add the cards you carry to follow their statements.",
+    dialogTitle: (card: string, month: string) => `${card} · ${monthYear(month)} statement`,
+    status: {
+      OPEN: "Open",
+      CLOSED: "Closed",
+      OVERDUE: "Overdue",
+      PAID: "Paid",
+      UPCOMING: "Upcoming",
+      EMPTY: "Nothing on it",
+    },
+    sentence: {
+      open: (closing: string, due: string | null) =>
+        `Taking purchases until ${fullDate(closing)}${due ? `, due ${fullDate(due)}` : ""}.`,
+      closed: (closing: string, due: string | null) =>
+        `Closed on ${fullDate(closing)}${due ? `, due ${fullDate(due)}` : ""}.`,
+      overdue: (due: string | null) =>
+        `Past the due date${due ? ` (${fullDate(due)})` : ""} and not fully paid.`,
+      paid: "Paid.",
+      upcoming: (closing: string, due: string | null) =>
+        `Closes on ${fullDate(closing)}${due ? `, due ${fullDate(due)}` : ""}. New purchases start landing on it once the current statement closes.`,
+      empty: "Nothing lands on this statement.",
+    },
+    cardDays: (closingDay: number, dueDay: number | null) =>
+      `closes day ${closingDay}${dueDay ? ` · due day ${dueDay}` : ""}`,
+    cardYearTotal: (total: string) => `${total} this year`,
+    cell: (card: string, month: string, total: string, status: string) =>
+      `${card}, ${monthYear(month)} statement: ${total}, ${status}`,
+    detail: {
+      loadFailed: "Couldn't load this statement.",
+      olderInstallments: "Installments of older purchases",
+      purchases: "Purchases this cycle",
+      recurring: "Recurring charges",
+      total: "Statement total",
+      paid: "Paid",
+      remaining: "Still to pay",
+      carriedLabel: "Carried in (installments, subscriptions, fees)",
+      carriedHint: "Anything already on this statement that wasn't logged here.",
+      carriedFailed: "Couldn't save the carried amount.",
+      charges: "On this statement",
+      noCharges: "No purchases land on it.",
+      installmentShort: "Inst.",
+      recurringTag: "recurring",
+      payments: "Payments",
+      paidOn: (date: string) => `Paid on ${fullDate(date)}`,
+      deletePayment: (amount: string) => `Delete payment of ${amount}`,
+      paidOnLabel: "Paid on",
+      register: "Register payment",
+      typeAmountPaid: "Type the amount paid.",
+      registerFailed: "Couldn't register the payment.",
+      deleteFailed: "Couldn't delete the payment.",
+      paymentNote:
+        "The payment is what leaves your account — the purchases were already counted as spending when you made them.",
+    },
+    carried: {
+      label: (month: string) => `Already on the ${monthYear(month)} statement`,
+      failed: "Couldn't save that amount.",
     },
   },
 
