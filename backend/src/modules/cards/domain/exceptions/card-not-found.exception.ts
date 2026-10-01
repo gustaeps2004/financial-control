@@ -3,6 +3,6 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class CardNotFoundException extends BusinessException {
   constructor() {
     // 404 Not Found
-    super('Card not found', 404);
+    super('Card not found', 404, 'CARD_NOT_FOUND');
   }
 }

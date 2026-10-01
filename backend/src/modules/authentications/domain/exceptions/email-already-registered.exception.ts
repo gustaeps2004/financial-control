@@ -3,6 +3,10 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class EmailAlreadyRegisteredException extends BusinessException {
   constructor(email: string) {
     // 409 Conflict
-    super(`Email "${email}" is already registered`, 409);
+    super(
+      `Email "${email}" is already registered`,
+      409,
+      'EMAIL_ALREADY_REGISTERED',
+    );
   }
 }

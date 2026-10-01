@@ -3,6 +3,6 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class UserNotFoundException extends BusinessException {
   constructor() {
     // 404 Not Found
-    super('User not found', 404);
+    super('User not found', 404, 'USER_NOT_FOUND');
   }
 }

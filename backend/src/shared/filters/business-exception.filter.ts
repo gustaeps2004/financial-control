@@ -12,6 +12,7 @@ export class BusinessExceptionFilter implements ExceptionFilter {
 
     response.status(exception.statusCode).json({
       statusCode: exception.statusCode,
+      code: exception.code,
       message: exception.message,
       path: request.url,
       correlationId: CorrelationIdStore.getCorrelationId(),

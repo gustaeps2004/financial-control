@@ -3,6 +3,10 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class UsernameAlreadyRegisteredException extends BusinessException {
   constructor(username: string) {
     // 409 Conflict
-    super(`Username "${username}" is already registered`, 409);
+    super(
+      `Username "${username}" is already registered`,
+      409,
+      'USERNAME_ALREADY_REGISTERED',
+    );
   }
 }

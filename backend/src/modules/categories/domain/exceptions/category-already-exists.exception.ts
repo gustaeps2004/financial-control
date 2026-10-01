@@ -3,6 +3,6 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class CategoryAlreadyExistsException extends BusinessException {
   constructor(name: string) {
     // 409 Conflict
-    super(`Category "${name}" already exists`, 409);
+    super(`Category "${name}" already exists`, 409, 'CATEGORY_ALREADY_EXISTS');
   }
 }

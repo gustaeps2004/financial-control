@@ -3,6 +3,6 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class CategoryNotFoundException extends BusinessException {
   constructor() {
     // 404 Not Found
-    super('Category not found', 404);
+    super('Category not found', 404, 'CATEGORY_NOT_FOUND');
   }
 }

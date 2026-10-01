@@ -3,6 +3,6 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class IncorrectPasswordException extends BusinessException {
   constructor() {
     // 403 Forbidden: signed in, but the password confirmation didn't match.
-    super('Incorrect password', 403);
+    super('Incorrect password', 403, 'INCORRECT_PASSWORD');
   }
 }

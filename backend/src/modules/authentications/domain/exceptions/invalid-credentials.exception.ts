@@ -3,6 +3,6 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class InvalidCredentialsException extends BusinessException {
   constructor() {
     // 401 Unauthorized
-    super('Invalid email or password', 401);
+    super('Invalid email or password', 401, 'INVALID_CREDENTIALS');
   }
 }

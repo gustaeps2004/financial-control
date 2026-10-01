@@ -3,6 +3,10 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class RecurringTransactionNotFoundException extends BusinessException {
   constructor() {
     // 404 Not Found
-    super('Recurring transaction not found', 404);
+    super(
+      'Recurring transaction not found',
+      404,
+      'RECURRING_TRANSACTION_NOT_FOUND',
+    );
   }
 }

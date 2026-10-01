@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   INestApplication,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
@@ -12,13 +13,14 @@ import { SharedModule } from '../shared.module';
 
 interface ErrorResponseBody {
   statusCode: number;
+  code: string;
   message: string | string[];
   correlationId?: string;
 }
 
 class TestBusinessException extends BusinessException {
   constructor(message: string, statusCode: number) {
-    super(message, statusCode);
+    super(message, statusCode, 'TEST_RULE_BROKEN');
   }
 }
 
@@ -42,6 +44,11 @@ class TestController {
       'username must be longer than or equal to 3 characters',
       'email must be an email',
     ]);
+  }
+
+  @Get('unauthorized-error')
+  throwUnauthorized(): never {
+    throw new UnauthorizedException('Invalid or expired token');
   }
 }
 
@@ -69,6 +76,7 @@ describe('Global exception filters', () => {
     const body = response.body as ErrorResponseBody;
 
     expect(response.status).toBe(422);
+    expect(body.code).toBe('TEST_RULE_BROKEN');
     expect(body.message).toBe('Something went wrong');
     expect(body).toHaveProperty('correlationId');
   });
@@ -80,6 +88,7 @@ describe('Global exception filters', () => {
     const body = response.body as ErrorResponseBody;
 
     expect(response.status).toBe(500);
+    expect(body.code).toBe('INTERNAL_SERVER_ERROR');
     expect(body.message).toBe('Internal server error');
     expect(body).toHaveProperty('correlationId');
   });
@@ -91,10 +100,22 @@ describe('Global exception filters', () => {
     const body = response.body as ErrorResponseBody;
 
     expect(response.status).toBe(400);
+    expect(body.code).toBe('BAD_REQUEST');
     expect(body.message).toEqual([
       'username must be longer than or equal to 3 characters',
       'email must be an email',
     ]);
     expect(body).toHaveProperty('correlationId');
+  });
+
+  it('names framework errors after their HTTP status, so clients can translate them', async () => {
+    const response = await request(app.getHttpServer()).get(
+      '/test/unauthorized-error',
+    );
+    const body = response.body as ErrorResponseBody;
+
+    expect(response.status).toBe(401);
+    expect(body.code).toBe('UNAUTHORIZED');
+    expect(body.message).toBe('Invalid or expired token');
   });
 });

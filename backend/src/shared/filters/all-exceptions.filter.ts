@@ -37,11 +37,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     response.status(statusCode).json({
       statusCode,
+      code: this.codeFor(statusCode),
       message,
       path: request.url,
       correlationId,
       timestamp: new Date().toISOString(),
     });
+  }
+
+  // Errors raised outside the domain (validation, the auth guard, unknown
+  // routes) are identified by their status name: BAD_REQUEST, UNAUTHORIZED…
+  private codeFor(statusCode: number): string {
+    // Undefined for a status HttpStatus doesn't list.
+    const name: string | undefined = HttpStatus[statusCode];
+    return name ?? 'INTERNAL_SERVER_ERROR';
   }
 
   // ValidationPipe's BadRequestException carries the real per-field errors in

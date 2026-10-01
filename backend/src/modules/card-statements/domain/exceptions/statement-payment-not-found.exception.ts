@@ -3,6 +3,6 @@ import { BusinessException } from '../../../../shared/exceptions/business.except
 export class StatementPaymentNotFoundException extends BusinessException {
   constructor() {
     // 404 Not Found
-    super('Statement payment not found', 404);
+    super('Statement payment not found', 404, 'STATEMENT_PAYMENT_NOT_FOUND');
   }
 }

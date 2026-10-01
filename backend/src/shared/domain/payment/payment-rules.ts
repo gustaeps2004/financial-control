@@ -4,7 +4,11 @@ import { PaymentMethod } from './payment-method.enum';
 export class CreditPaymentRequiresCardException extends BusinessException {
   constructor() {
     // 422 Unprocessable Entity
-    super('Credit card payments need a card', 422);
+    super(
+      'Credit card payments need a card',
+      422,
+      'CREDIT_PAYMENT_REQUIRES_CARD',
+    );
   }
 }
 
@@ -14,6 +18,7 @@ export class CreditPaymentNotAllowedException extends BusinessException {
     super(
       `"${categoryName}" is not an expense, so it can't be charged to a credit card`,
       422,
+      'CREDIT_PAYMENT_NOT_ALLOWED',
     );
   }
 }
@@ -24,6 +29,7 @@ export class InstallmentsRequireCreditException extends BusinessException {
     super(
       'Only positive credit card purchases can be split in installments',
       422,
+      'INSTALLMENTS_REQUIRE_CREDIT',
     );
   }
 }
