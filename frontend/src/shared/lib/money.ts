@@ -26,6 +26,11 @@ export function parseMoneyInput(value: string): number {
   return parseFloat(normalized) || 0;
 }
 
+/** An amount as it would be typed back into a field: "-1.663,08". */
+export function formatMoneyInput(amount: number): string {
+  return (amount < 0 ? "-" : "") + formatMoney(amount).replace("R$ ", "");
+}
+
 /** "− R$ 10,00" or "+ R$ 10,00"; zero has no sign. */
 export function formatSignedMoney(amount: number): string {
   if (amount === 0) return formatMoney(0);

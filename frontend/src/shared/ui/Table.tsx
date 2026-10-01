@@ -29,9 +29,9 @@ export function TableBody({ children }: { children: ReactNode }) {
   return <tbody>{children}</tbody>;
 }
 
-export function TableRow({ children }: { children: ReactNode }) {
+export function TableRow({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <tr style={bodyRuleStyle} className="hover:bg-ink/4">
+    <tr style={bodyRuleStyle} className={cn("hover:bg-ink/4", className)}>
       {children}
     </tr>
   );

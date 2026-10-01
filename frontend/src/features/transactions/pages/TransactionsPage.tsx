@@ -1,46 +1,77 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { PlusCircle } from "@phosphor-icons/react";
+import { Card } from "@/shared/ui/Card";
+import { Dialog } from "@/shared/ui/Dialog";
 import { Field } from "@/shared/ui/Field";
 import { Select } from "@/shared/ui/Select";
-import { useFinanceData } from "@/features/finance-data/context/FinanceDataContext";
-import { MONTH_NAMES_FULL, formatMoney } from "@/features/finance-data/lib/selectors";
+import { MonthSwitcher } from "@/shared/ui/MonthSwitcher";
+import { cn } from "@/shared/lib/cn";
+import { currentYearMonth, dateInMonth, formatYearMonth, todayIso } from "@/shared/lib/dates";
+import { formatMoney, formatMoneyInput } from "@/shared/lib/money";
+import { ApiError } from "@/lib/http/api-error";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
-import { useCards } from "@/features/cards/context/CardsContext";
-import { QuickAddTransactionForm } from "../components/QuickAddTransactionForm";
-import { TransactionsTable } from "../components/TransactionsTable";
+import { useLedger } from "@/features/reports/hooks/use-reports";
+import type { LedgerEntry } from "@/features/reports/types";
+import { LedgerTable } from "../components/LedgerTable";
+import { TransactionForm, type TransactionFormValues } from "../components/TransactionForm";
+import { useTransactionActions } from "../hooks/use-transaction-actions";
+import { entryTitle } from "../lib/ledger-display";
+
+type DialogState = { mode: "edit" | "adjust"; entry: LedgerEntry };
+
+function formValuesOf(entry: LedgerEntry): Partial<TransactionFormValues> {
+  return {
+    date: entry.date,
+    description: entry.description ?? "",
+    categoryId: entry.category?.id ?? "",
+    amount: formatMoneyInput(entry.amount),
+    paymentMethod: entry.paymentMethod ?? "",
+    cardId: entry.card?.id ?? "",
+    installments: String(entry.installments),
+  };
+}
 
 export function TransactionsPage() {
-  const { transactions, removeTransaction } = useFinanceData();
+  const [month, setMonth] = useState(currentYearMonth);
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [dialog, setDialog] = useState<DialogState | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
   const { categories } = useCategories();
-  const { cards } = useCards();
+  const ledger = useLedger(month);
+  const { createTransaction, updateTransaction, removeTransaction, removeStatementPayment } =
+    useTransactionActions();
 
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const [year, setYear] = useState(currentYear);
-  const [month, setMonth] = useState(now.getMonth());
-  const [filterCat, setFilterCat] = useState("all");
+  const entries = ledger.data?.entries ?? [];
+  const visible =
+    filterCategory === "all"
+      ? entries
+      : entries.filter((entry) => entry.category?.id === filterCategory);
 
-  const years = useMemo(() => {
-    const set = new Set(transactions.map((t) => t.year));
-    set.add(currentYear);
-    return [...set].sort((a, b) => a - b);
-  }, [transactions, currentYear]);
+  const moneyIn = visible
+    .filter((entry) => entry.kind === "INCOME")
+    .reduce((sum, entry) => sum + entry.amount, 0);
+  const spent = visible
+    .filter((entry) => entry.kind === "EXPENSE" || entry.kind === "FIXED_BILL")
+    .reduce((sum, entry) => sum + entry.amount, 0);
 
-  const filtered = useMemo(
-    () =>
-      transactions
-        .filter(
-          (t) =>
-            t.year === year &&
-            (month < 0 || t.month === month) &&
-            (filterCat === "all" || t.cat === filterCat),
-        )
-        .sort((a, b) => b.month - a.month || b.day - a.day),
-    [transactions, year, month, filterCat],
-  );
+  // New entries default to today's day number, inside the month on screen.
+  const defaultDate = dateInMonth(month, Number(todayIso().slice(8, 10)));
 
-  const filteredTotal = filtered
-    .filter((t) => t.kind === "out")
-    .reduce((sum, t) => sum + t.amount, 0);
+  async function handleRemove(entry: LedgerEntry) {
+    setActionError(null);
+    try {
+      if (entry.source === "CARD_PAYMENT" && entry.paymentId) {
+        await removeStatementPayment(entry.paymentId);
+      } else if (entry.transactionId) {
+        await removeTransaction(entry.transactionId);
+      }
+    } catch (err) {
+      setActionError(
+        err instanceof ApiError ? err.message : `Couldn't delete "${entryTitle(entry)}".`,
+      );
+    }
+  }
 
   return (
     <div>
@@ -48,34 +79,20 @@ export function TransactionsPage() {
         <div>
           <h3 className="mb-0.5">Transactions</h3>
           <p className="m-0 text-[13px] text-ink/55">
-            {filtered.length} entries · {formatMoney(filteredTotal)} out
+            {visible.length} entries · {formatMoney(moneyIn)} in · {formatMoney(spent)} spent
           </p>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <Field label="Year" className="w-[118px]">
-            <Select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Month" className="w-[132px]">
-            <Select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
-              <option value={-1}>All year</option>
-              {MONTH_NAMES_FULL.map((label, index) => (
-                <option key={label} value={index}>
-                  {label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Category" className="w-[150px]">
-            <Select value={filterCat} onChange={(e) => setFilterCat(e.target.value)}>
+        <div className="flex flex-wrap items-end gap-3">
+          <MonthSwitcher month={month} onChange={setMonth} />
+          <Field label="Category" htmlFor="filter-category" className="w-[170px]">
+            <Select
+              id="filter-category"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
               <option value="all">All categories</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.name}>
+                <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
               ))}
@@ -84,15 +101,73 @@ export function TransactionsPage() {
         </div>
       </div>
 
-      <QuickAddTransactionForm year={year} month={month} />
+      <Card className="mb-4 gap-3 p-3.5">
+        <div className="flex items-center gap-2">
+          <PlusCircle size={15} className="text-accent" />
+          <span className="text-[13px] font-medium">Log a transaction</span>
+        </div>
+        <TransactionForm
+          key={month}
+          initial={{ date: defaultDate }}
+          submitLabel="Add"
+          keepAfterSubmit
+          onSubmit={async (input) => {
+            await createTransaction(input);
+          }}
+        />
+      </Card>
 
-      <TransactionsTable
-        transactions={filtered}
-        cards={cards}
-        dateVariant="full"
-        onRemove={removeTransaction}
-        emptyMessage="No entries match this filter."
-      />
+      {actionError && <p className="mb-3 text-[12.5px] text-accent-300">{actionError}</p>}
+      {ledger.error && (
+        <p className="mb-3 text-[12.5px] text-accent-300">
+          Couldn't load {formatYearMonth(month)}: {ledger.error.message}
+        </p>
+      )}
+
+      <div className={cn("transition-opacity", ledger.isLoading && "opacity-60")}>
+        <LedgerTable
+          entries={visible}
+          emptyMessage={
+            ledger.isLoading
+              ? "Loading…"
+              : `Nothing in ${formatYearMonth(month)} yet. Log the first one above.`
+          }
+          onEdit={(entry) => setDialog({ mode: "edit", entry })}
+          onAdjust={(entry) => setDialog({ mode: "adjust", entry })}
+          onRemove={(entry) => void handleRemove(entry)}
+        />
+      </div>
+
+      <Dialog
+        open={dialog !== null}
+        title={dialog?.mode === "adjust" ? "Log the actual value" : "Edit transaction"}
+        onClose={() => setDialog(null)}
+      >
+        {dialog && (
+          <TransactionForm
+            key={dialog.entry.key}
+            initial={formValuesOf(dialog.entry)}
+            submitLabel={dialog.mode === "adjust" ? "Log it" : "Save"}
+            recurringTransactionId={dialog.entry.recurringTransactionId}
+            knownCategory={dialog.entry.category}
+            knownCard={dialog.entry.card}
+            context={
+              dialog.mode === "adjust"
+                ? `Replaces the automatic "${entryTitle(dialog.entry)}" of ${formatYearMonth(month)}.`
+                : undefined
+            }
+            onCancel={() => setDialog(null)}
+            onSubmit={async (input) => {
+              if (dialog.mode === "adjust") {
+                await createTransaction(input);
+              } else if (dialog.entry.transactionId) {
+                await updateTransaction(dialog.entry.transactionId, input);
+              }
+              setDialog(null);
+            }}
+          />
+        )}
+      </Dialog>
     </div>
   );
 }
