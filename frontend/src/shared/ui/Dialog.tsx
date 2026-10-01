@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { X } from "@phosphor-icons/react";
 import { cn } from "@/shared/lib/cn";
+import { useI18n } from "@/lib/i18n/i18n-context";
 
 type DialogSize = "md" | "lg";
 
@@ -19,6 +20,7 @@ const sizeClasses: Record<DialogSize, string> = {
 
 /** A modal on top of the native <dialog>: focus trap and Esc come for free. */
 export function Dialog({ open, title, onClose, children, size = "md" }: DialogProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export function Dialog({ open, title, onClose, children, size = "md" }: DialogPr
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close"
+              aria-label={t.common.close}
               className="grid size-8 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-neutral-500 hover:bg-ink/7 hover:text-ink"
             >
               <X size={16} />

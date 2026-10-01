@@ -1,5 +1,6 @@
-import { MONTH_NAMES, currentYearMonth, parseYearMonth } from "@/shared/lib/dates";
+import { currentYearMonth, parseYearMonth } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/cn";
+import { useI18n } from "@/lib/i18n/i18n-context";
 
 interface MonthInputProps {
   id?: string;
@@ -19,6 +20,7 @@ const selectClasses =
  * every browser (Firefox renders a plain text box).
  */
 export function MonthInput({ id, label, value, onChange, emptyLabel, className }: MonthInputProps) {
+  const { t } = useI18n();
   const fallback = parseYearMonth(currentYearMonth());
   const parsed = value ? parseYearMonth(value) : null;
   const year = parsed?.year ?? fallback.year;
@@ -29,7 +31,7 @@ export function MonthInput({ id, label, value, onChange, emptyLabel, className }
     <div role="group" aria-label={label} className={cn("flex gap-1.5", className)}>
       <select
         id={id}
-        aria-label={`${label}: month`}
+        aria-label={t.controls.monthOf(label)}
         className={cn(selectClasses, "min-w-0 flex-1")}
         value={parsed ? String(parsed.month) : ""}
         onChange={(e) => {
@@ -38,14 +40,14 @@ export function MonthInput({ id, label, value, onChange, emptyLabel, className }
         }}
       >
         {emptyLabel !== undefined && <option value="">{emptyLabel}</option>}
-        {MONTH_NAMES.map((name, index) => (
+        {t.dates.months.map((name, index) => (
           <option key={name} value={String(index + 1)}>
             {name}
           </option>
         ))}
       </select>
       <select
-        aria-label={`${label}: year`}
+        aria-label={t.controls.yearOf(label)}
         className={cn(selectClasses, "w-[88px] flex-none")}
         value={String(year)}
         disabled={!parsed}

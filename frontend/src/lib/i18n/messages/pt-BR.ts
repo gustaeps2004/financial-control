@@ -67,6 +67,27 @@ export const ptBR: Messages = {
     label: "Idioma",
   },
 
+  nav: {
+    dashboard: "Resumo",
+    transactions: "Lançamentos",
+    statements: "Faturas",
+    recurring: "Recorrentes",
+    year: "Ano",
+    settings: "Configurações",
+    signOut: "Sair",
+  },
+
+  controls: {
+    previousMonth: "Mês anterior",
+    nextMonth: "Próximo mês",
+    thisMonth: "Este mês",
+    previousYear: "Ano anterior",
+    nextYear: "Próximo ano",
+    thisYear: "Este ano",
+    monthOf: (field) => `${field}: mês`,
+    yearOf: (field) => `${field}: ano`,
+  },
+
   auth: {
     login: {
       heroTitle: "Cada real,\nna ponta do lápis.",

@@ -9,19 +9,21 @@ import {
   SquaresFour,
 } from "@phosphor-icons/react";
 import { cn } from "@/shared/lib/cn";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useAuth, useInitials } from "@/features/auth/context/AuthContext";
 
 const NAV_ITEMS = [
-  { to: "/app/dashboard", label: "Dashboard", Icon: SquaresFour },
-  { to: "/app/transactions", label: "Transactions", Icon: ListBullets },
-  { to: "/app/statements", label: "Statements", Icon: CreditCard },
-  { to: "/app/recurring", label: "Recurring", Icon: Repeat },
-  { to: "/app/year", label: "Year", Icon: CalendarBlank },
-  { to: "/app/settings", label: "Settings", Icon: Gear },
-];
+  { to: "/app/dashboard", key: "dashboard", Icon: SquaresFour },
+  { to: "/app/transactions", key: "transactions", Icon: ListBullets },
+  { to: "/app/statements", key: "statements", Icon: CreditCard },
+  { to: "/app/recurring", key: "recurring", Icon: Repeat },
+  { to: "/app/year", key: "year", Icon: CalendarBlank },
+  { to: "/app/settings", key: "settings", Icon: Gear },
+] as const;
 
 function UserChip({ className }: { className?: string }) {
   const { displayName, logout } = useAuth();
+  const { t } = useI18n();
   const initials = useInitials();
   const navigate = useNavigate();
 
@@ -39,7 +41,7 @@ function UserChip({ className }: { className?: string }) {
       <button
         type="button"
         onClick={handleSignOut}
-        aria-label="Sign out"
+        aria-label={t.nav.signOut}
         className="cursor-pointer border-0 bg-transparent p-0 text-neutral-600 hover:text-ink"
       >
         <SignOut size={15} />
@@ -51,6 +53,8 @@ function UserChip({ className }: { className?: string }) {
 // A sidebar from md up; on phones it folds into a top bar whose nav scrolls
 // sideways, so the page content starts right below it.
 export function AppShell() {
+  const { t } = useI18n();
+
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <aside className="flex flex-none flex-col gap-2.5 bg-sidebar p-3 md:sticky md:top-0 md:h-screen md:w-50 md:gap-5">
@@ -60,7 +64,7 @@ export function AppShell() {
         </div>
 
         <nav className="-mx-3 flex gap-0.5 overflow-x-auto px-3 md:mx-0 md:flex-col md:overflow-visible md:px-0">
-          {NAV_ITEMS.map(({ to, label, Icon }) => (
+          {NAV_ITEMS.map(({ to, key, Icon }) => (
             <NavLink
               key={to}
               to={to}
@@ -73,7 +77,7 @@ export function AppShell() {
               }
             >
               <Icon size={16} />
-              {label}
+              {t.nav[key]}
             </NavLink>
           ))}
         </nav>

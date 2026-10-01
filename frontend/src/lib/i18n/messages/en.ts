@@ -74,6 +74,28 @@ export const en = {
     label: "Language",
   },
 
+  nav: {
+    dashboard: "Dashboard",
+    transactions: "Transactions",
+    statements: "Statements",
+    recurring: "Recurring",
+    year: "Year",
+    settings: "Settings",
+    signOut: "Sign out",
+  },
+
+  controls: {
+    previousMonth: "Previous month",
+    nextMonth: "Next month",
+    thisMonth: "This month",
+    previousYear: "Previous year",
+    nextYear: "Next year",
+    thisYear: "This year",
+    // The two halves of a month picker, named after its field.
+    monthOf: (field: string) => `${field}: month`,
+    yearOf: (field: string) => `${field}: year`,
+  },
+
   auth: {
     login: {
       heroTitle: "Every real,\naccounted for.",
