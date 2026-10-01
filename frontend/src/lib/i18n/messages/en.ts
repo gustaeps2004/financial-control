@@ -427,6 +427,40 @@ export const en = {
     },
   },
 
+  settings: {
+    title: "Settings",
+    account: {
+      title: "Account",
+      updateFailed: "Couldn't update your name.",
+    },
+    preferences: {
+      title: "Preferences",
+      currency: "Currency",
+      monthStartsOn: "Month starts on",
+      calendarMonth: "Day 1 (calendar month)",
+      cardClosingDay: "Card closing day",
+    },
+    categoriesTitle: "Categories",
+    cardsTitle: "Cards",
+    recurring: {
+      title: "Recurring",
+      none: "Nothing repeating this month.",
+      day: (day: number) => `day ${day}`,
+      manage: "Manage recurring",
+    },
+    dangerZone: {
+      title: "Danger zone",
+      warning:
+        "Deleting your account erases every transaction, card, category, recurring item and statement you recorded.",
+      cannotUndo: "This cannot be undone.",
+      confirmLabel: "Type your password to confirm",
+      deleting: "Deleting…",
+      deleteEverything: "Delete everything",
+      deleteAccount: "Delete account",
+      failed: "Couldn't delete your account.",
+    },
+  },
+
   controls: {
     previousMonth: "Previous month",
     nextMonth: "Next month",

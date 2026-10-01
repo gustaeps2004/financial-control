@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardKicker } from "@/shared/ui/Card";
 import { buttonVariants } from "@/shared/ui/Button";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCards } from "@/features/cards/context/CardsContext";
 
 export function CardsSummaryCard() {
   const { cards, removeCard } = useCards();
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
 
   async function handleRemove(id: string) {
@@ -14,17 +16,15 @@ export function CardsSummaryCard() {
       setError(null);
       await removeCard(id);
     } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Couldn't remove that card. Please try again.",
-      );
+      setError(errorMessage(err, t, t.cards.removeFailed));
     }
   }
 
   return (
     <Card className="gap-3 p-4">
-      <CardKicker>Cards</CardKicker>
+      <CardKicker>{t.settings.cardsTitle}</CardKicker>
       <div className="flex flex-col gap-2.5">
-        {cards.length === 0 && <p className="m-0 text-[12.5px] text-ink/55">No cards yet.</p>}
+        {cards.length === 0 && <p className="m-0 text-[12.5px] text-ink/55">{t.cards.none}</p>}
         {cards.map((card) => (
           <div key={card.id} className="flex items-center gap-2.5">
             <span
@@ -37,6 +37,7 @@ export function CardsSummaryCard() {
             <button
               type="button"
               onClick={() => void handleRemove(card.id)}
+              aria-label={t.common.remove(card.nick)}
               className="cursor-pointer border-0 bg-transparent text-accent"
             >
               ×
@@ -49,7 +50,7 @@ export function CardsSummaryCard() {
         to="/setup/cards"
         className={buttonVariants({ variant: "secondary", className: "self-start" })}
       >
-        Add a card
+        {t.cards.add}
       </Link>
     </Card>
   );

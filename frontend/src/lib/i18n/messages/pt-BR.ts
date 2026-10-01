@@ -422,6 +422,40 @@ export const ptBR: Messages = {
     },
   },
 
+  settings: {
+    title: "Configurações",
+    account: {
+      title: "Conta",
+      updateFailed: "Não foi possível atualizar seu nome.",
+    },
+    preferences: {
+      title: "Preferências",
+      currency: "Moeda",
+      monthStartsOn: "O mês começa no",
+      calendarMonth: "Dia 1 (mês do calendário)",
+      cardClosingDay: "Dia de fechamento do cartão",
+    },
+    categoriesTitle: "Categorias",
+    cardsTitle: "Cartões",
+    recurring: {
+      title: "Recorrentes",
+      none: "Nada se repete neste mês.",
+      day: (day) => `dia ${day}`,
+      manage: "Gerenciar recorrentes",
+    },
+    dangerZone: {
+      title: "Zona de perigo",
+      warning:
+        "Excluir sua conta apaga todos os lançamentos, cartões, categorias, recorrentes e faturas que você registrou.",
+      cannotUndo: "Isso não pode ser desfeito.",
+      confirmLabel: "Digite sua senha para confirmar",
+      deleting: "Excluindo…",
+      deleteEverything: "Excluir tudo",
+      deleteAccount: "Excluir conta",
+      failed: "Não foi possível excluir sua conta.",
+    },
+  },
+
   controls: {
     previousMonth: "Mês anterior",
     nextMonth: "Próximo mês",

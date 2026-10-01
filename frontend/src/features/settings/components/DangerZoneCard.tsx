@@ -5,11 +5,14 @@ import { Card, CardKicker } from "@/shared/ui/Card";
 import { Button } from "@/shared/ui/Button";
 import { Field } from "@/shared/ui/Field";
 import { Input } from "@/shared/ui/Input";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useAuth } from "@/features/auth/context/AuthContext";
 
 export function DangerZoneCard() {
   const { deleteAccount } = useAuth();
+  const { t } = useI18n();
+  const labels = t.settings.dangerZone;
   const navigate = useNavigate();
   const [isConfirming, setIsConfirming] = useState(false);
   const [password, setPassword] = useState("");
@@ -24,7 +27,7 @@ export function DangerZoneCard() {
       await deleteAccount(password);
       navigate("/login");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't delete your account.");
+      setError(errorMessage(err, t, labels.failed));
       setIsDeleting(false);
     }
   }
@@ -33,14 +36,13 @@ export function DangerZoneCard() {
     <Card className="flex-row items-start gap-3.5 border border-danger/35 bg-danger/[0.07] p-4">
       <WarningCircle size={20} weight="fill" className="mt-0.5 flex-none text-danger" />
       <div className="flex flex-col gap-2.5">
-        <CardKicker className="text-danger">Danger zone</CardKicker>
+        <CardKicker className="text-danger">{labels.title}</CardKicker>
         <p className="m-0 text-[13px] opacity-80">
-          Deleting your account erases every transaction, card, category, recurring item
-          and statement you recorded. <strong className="text-ink">This cannot be undone.</strong>
+          {labels.warning} <strong className="text-ink">{labels.cannotUndo}</strong>
         </p>
         {isConfirming ? (
           <form onSubmit={handleDelete} className="flex flex-wrap items-end gap-2">
-            <Field label="Type your password to confirm" htmlFor="delete-password" className="flex-[0_1_240px]">
+            <Field label={labels.confirmLabel} htmlFor="delete-password" className="flex-[0_1_240px]">
               <Input
                 id="delete-password"
                 type="password"
@@ -51,7 +53,7 @@ export function DangerZoneCard() {
               />
             </Field>
             <Button type="submit" variant="danger" disabled={isDeleting || !password}>
-              {isDeleting ? "Deleting…" : "Delete everything"}
+              {isDeleting ? labels.deleting : labels.deleteEverything}
             </Button>
             <Button
               variant="secondary"
@@ -61,12 +63,12 @@ export function DangerZoneCard() {
                 setError(null);
               }}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
           </form>
         ) : (
           <Button variant="danger" className="self-start" onClick={() => setIsConfirming(true)}>
-            Delete account
+            {labels.deleteAccount}
           </Button>
         )}
         {error && <p className="m-0 text-[12px] text-accent-300">{error}</p>}
