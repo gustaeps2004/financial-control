@@ -407,6 +407,26 @@ export const en = {
     },
   },
 
+  annual: {
+    title: "Year overview",
+    intro:
+      "Month by month. Months still to come are projections: recurring items post themselves and card bills count at their statements' value.",
+    loadFailed: "Couldn't load this year.",
+    leftoverByMonth: "Left over, month by month",
+    realized: "Happened so far",
+    withProjection: "Whole year, with projections",
+    footnote:
+      'Total out = fixed bills + card bills + paid now. "On cards" is what was charged to cards that month — it leaves the account later, inside the card bills.',
+    chart: {
+      bar: (month: string, amount: string, projected: boolean) =>
+        `${monthYear(month)}: ${amount} left over${projected ? ", projected" : ""}`,
+      tooltip: (month: string, projected: boolean) =>
+        `${monthYear(month)}${projected ? " · projection" : ""}`,
+      moneyLeft: "Money left",
+      overspent: "Spent more than came in",
+    },
+  },
+
   controls: {
     previousMonth: "Previous month",
     nextMonth: "Next month",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/shared/lib/cn";
-import { formatYearMonth } from "@/shared/lib/dates";
 import { formatMoneyWithMinus } from "@/shared/lib/money";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import type { AnnualView } from "@/features/reports/types";
 
 interface LeftoverByMonthChartProps {
@@ -14,6 +14,7 @@ interface LeftoverByMonthChartProps {
  * Projected months are outlines, so "projection" never rests on color.
  */
 export function LeftoverByMonthChart({ annual }: LeftoverByMonthChartProps) {
+  const { t } = useI18n();
   const [hovered, setHovered] = useState<string | null>(null);
   const values = annual.months.map((month) => month.cashFlow.leftover);
   const top = Math.max(0, ...values);
@@ -37,7 +38,7 @@ export function LeftoverByMonthChart({ annual }: LeftoverByMonthChartProps) {
             const isProjected = status === "PROJECTED";
             const isNegative = value < 0;
             const height = Math.abs(scale(value));
-            const label = `${formatYearMonth(month)}: ${formatMoneyWithMinus(value)} left over${isProjected ? ", projected" : ""}`;
+            const label = t.annual.chart.bar(month, formatMoneyWithMinus(value), isProjected);
             return (
               <div
                 key={month}
@@ -78,10 +79,7 @@ export function LeftoverByMonthChart({ annual }: LeftoverByMonthChartProps) {
                     }
                   >
                     <b className="block font-semibold tabular-nums">{formatMoneyWithMinus(value)}</b>
-                    <span className="text-ink/60">
-                      {formatYearMonth(month)}
-                      {isProjected ? " · projection" : ""}
-                    </span>
+                    <span className="text-ink/60">{t.annual.chart.tooltip(month, isProjected)}</span>
                   </span>
                 )}
               </div>
@@ -98,22 +96,22 @@ export function LeftoverByMonthChart({ annual }: LeftoverByMonthChartProps) {
               month === annual.currentMonth ? "font-semibold text-ink" : "text-neutral-500",
             )}
           >
-            {formatYearMonth(month, "short")}
+            {t.dates.monthShort(month)}
           </span>
         ))}
       </div>
       <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-ink/60">
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="inline-block size-2.5 rounded-sm bg-accent" />
-          Money left
+          {t.annual.chart.moneyLeft}
         </span>
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="inline-block size-2.5 rounded-sm bg-danger" />
-          Spent more than came in
+          {t.annual.chart.overspent}
         </span>
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="inline-block size-2.5 rounded-sm border border-neutral-500" />
-          Projection
+          {t.common.projection}
         </span>
       </div>
     </div>

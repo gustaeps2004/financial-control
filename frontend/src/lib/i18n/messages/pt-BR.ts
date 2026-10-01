@@ -403,6 +403,25 @@ export const ptBR: Messages = {
     },
   },
 
+  annual: {
+    title: "Visão anual",
+    intro:
+      "Mês a mês. Os meses que ainda não chegaram são projeções: os recorrentes se lançam sozinhos e as faturas contam pelo valor previsto.",
+    loadFailed: "Não foi possível carregar este ano.",
+    leftoverByMonth: "Sobrou, mês a mês",
+    realized: "Realizado até agora",
+    withProjection: "Ano inteiro, com projeção",
+    footnote:
+      "Total que saiu = contas fixas + faturas + à vista. “No crédito” é o que foi comprado no cartão naquele mês — sai da conta depois, dentro das faturas.",
+    chart: {
+      bar: (month, amount, projected) =>
+        `${monthYear(month)}: sobrou ${amount}${projected ? ", projeção" : ""}`,
+      tooltip: (month, projected) => `${monthYear(month)}${projected ? " · projeção" : ""}`,
+      moneyLeft: "Sobrou dinheiro",
+      overspent: "Gastou mais do que entrou",
+    },
+  },
+
   controls: {
     previousMonth: "Mês anterior",
     nextMonth: "Próximo mês",
