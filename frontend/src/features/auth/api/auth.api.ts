@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/http/api-client";
+import { apiClient, withAuth } from "@/lib/http/api-client";
 import type {
   LoginRequest,
   LoginResponse,
@@ -17,6 +17,8 @@ export const authApi = {
     apiClient.patch<UpdateUserNameResponse, UpdateUserNameRequest>(
       "/users/me",
       { name },
-      { headers: { Authorization: `Bearer ${token}` } },
+      withAuth(token),
     ),
+  deleteAccount: (password: string, token: string) =>
+    apiClient.delete("/users/me", { ...withAuth(token), body: JSON.stringify({ password }) }),
 };

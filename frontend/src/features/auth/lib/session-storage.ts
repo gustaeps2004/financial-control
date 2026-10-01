@@ -51,3 +51,13 @@ export function saveDisplayName(email: string, name: string): void {
 export function getDisplayName(email: string): string | null {
   return readDisplayNames()[email] ?? null;
 }
+
+/** Drops everything this device remembers about an account. */
+export function forgetAccount(email: string): void {
+  const names = readDisplayNames();
+  delete names[email];
+  localStorage.setItem(DISPLAY_NAMES_KEY, JSON.stringify(names));
+  localStorage.removeItem(`tally.preferences.${email}`);
+  // Left behind by versions that kept transactions on the device.
+  localStorage.removeItem(`tally.finance.${email}`);
+}

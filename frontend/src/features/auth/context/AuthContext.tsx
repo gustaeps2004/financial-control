@@ -2,6 +2,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { authApi } from "../api/auth.api";
 import {
   clearSession,
+  forgetAccount,
   getDisplayName,
   loadSession,
   saveDisplayName,
@@ -16,6 +17,7 @@ interface AuthContextValue {
   login: (email: string, password: string, keepSignedIn: boolean) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   updateName: (name: string) => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -72,6 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
   };
 
+  const deleteAccount = async (password: string) => {
+    if (!session) return;
+    await authApi.deleteAccount(password, session.token);
+    forgetAccount(session.email);
+    logout();
+  };
+
   const value: AuthContextValue = {
     session,
     isAuthenticated: session !== null,
@@ -79,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     updateName,
+    deleteAccount,
     logout,
   };
 
