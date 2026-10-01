@@ -5,13 +5,15 @@ import { Dialog } from "@/shared/ui/Dialog";
 import { cn } from "@/shared/lib/cn";
 import { currentYearMonth } from "@/shared/lib/dates";
 import { formatMoney, formatMoneyInput } from "@/shared/lib/money";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { RecurringForm } from "../components/RecurringForm";
 import { RecurringTable } from "../components/RecurringTable";
 import { useRecurringTransactions } from "../hooks/use-recurring";
 import type { RecurringTransaction } from "../types";
 
 export function RecurringPage() {
+  const { t } = useI18n();
   const { recurring, isLoading, error, createRecurring, updateRecurring, removeRecurring } =
     useRecurringTransactions();
   const [editing, setEditing] = useState<RecurringTransaction | null>(null);
@@ -28,36 +30,31 @@ export function RecurringPage() {
     try {
       await action();
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : failure);
+      setActionError(errorMessage(err, t, failure));
     }
   }
 
   function handleRemove(item: RecurringTransaction) {
-    const confirmed = window.confirm(
-      `Delete "${item.description}"? Its automatic entries disappear from every month, past ones included. To stop it from now on, use End instead.`,
-    );
-    if (!confirmed) return;
-    void run(() => removeRecurring(item.id), `Couldn't delete "${item.description}".`);
+    if (!window.confirm(t.recurring.confirmDelete(item.description))) return;
+    void run(() => removeRecurring(item.id), t.recurring.deleteFailed(item.description));
   }
 
   return (
     <div>
       <div className="mb-4.5">
-        <h3 className="mb-0.5">Recurring</h3>
+        <h3 className="mb-0.5">{t.recurring.title}</h3>
         <p className="m-0 max-w-[620px] text-[13px] text-ink/55 text-pretty">
-          Bills, subscriptions and income that repeat every month post themselves — months
-          ahead show up as projections. {activeNow.length} active this month,{" "}
-          {formatMoney(monthlyTotal)} in total.
+          {t.recurring.intro(activeNow.length, formatMoney(monthlyTotal))}
         </p>
       </div>
 
       <Card className="mb-4 gap-3 p-3.5">
         <div className="flex items-center gap-2">
           <Repeat size={15} className="text-accent" />
-          <span className="text-[13px] font-medium">Add something that repeats</span>
+          <span className="text-[13px] font-medium">{t.recurring.addTitle}</span>
         </div>
         <RecurringForm
-          submitLabel="Add"
+          submitLabel={t.common.add}
           resetAfterSubmit
           onSubmit={async (input) => {
             await createRecurring(input);
@@ -66,28 +63,32 @@ export function RecurringPage() {
       </Card>
 
       {actionError && <p className="mb-3 text-[12.5px] text-accent-300">{actionError}</p>}
-      {error && <p className="mb-3 text-[12.5px] text-accent-300">{error.message}</p>}
+      {error && (
+        <p className="mb-3 text-[12.5px] text-accent-300">
+          {errorMessage(error, t, t.recurring.loadFailed)}
+        </p>
+      )}
 
       <div className={cn("transition-opacity", isLoading && "opacity-60")}>
         <RecurringTable
           recurring={recurring}
-          emptyMessage={isLoading ? "Loading…" : "Nothing repeats yet. Add your first fixed bill above."}
+          emptyMessage={isLoading ? t.common.loading : t.recurring.empty}
           onEdit={setEditing}
           onEnd={(item) =>
             void run(
               () => updateRecurring(item.id, { endMonth: thisMonth }),
-              `Couldn't end "${item.description}".`,
+              t.recurring.endFailed(item.description),
             )
           }
           onRemove={handleRemove}
         />
       </div>
 
-      <Dialog open={editing !== null} title="Edit recurring" onClose={() => setEditing(null)}>
+      <Dialog open={editing !== null} title={t.recurring.editTitle} onClose={() => setEditing(null)}>
         {editing && (
           <RecurringForm
             key={editing.id}
-            submitLabel="Save"
+            submitLabel={t.common.save}
             initial={{
               description: editing.description,
               categoryId: editing.categoryId,

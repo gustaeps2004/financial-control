@@ -362,6 +362,47 @@ export const ptBR: Messages = {
     },
   },
 
+  recurring: {
+    title: "Recorrentes",
+    intro: (activeCount, total) =>
+      `Contas, assinaturas e entradas que se repetem todo mês são lançadas sozinhas — os meses à frente aparecem como projeção. ${activeCount} ${activeCount === 1 ? "ativo" : "ativos"} neste mês, ${total} no total.`,
+    addTitle: "Adicionar algo que se repete",
+    empty: "Nada se repete ainda. Adicione sua primeira conta fixa acima.",
+    loadFailed: "Não foi possível carregar os recorrentes.",
+    editTitle: "Editar recorrente",
+    confirmDelete: (name) =>
+      `Excluir "${name}"? Os lançamentos automáticos dele somem de todos os meses, inclusive dos passados. Para parar daqui para frente, use Encerrar.`,
+    deleteFailed: (name) => `Não foi possível excluir "${name}".`,
+    endFailed: (name) => `Não foi possível encerrar "${name}".`,
+    form: {
+      namePlaceholder: "Internet",
+      monthlyAmount: "Valor mensal",
+      starts: "Começa em",
+      ends: "Termina em",
+      noEnd: "Sem fim",
+      giveName: "Dê um nome, como “Internet”.",
+      typeMonthlyAmount: "Digite o valor mensal.",
+      dayRange: "O dia precisa estar entre 1 e 31.",
+      endBeforeStart: "Não pode terminar antes de começar.",
+      explanation: (day, start, end, onCard) =>
+        `Lançado automaticamente no dia ${day ?? "…"} de cada mês, ${
+          end
+            ? `de ${inlineMonthYear(start)} a ${inlineMonthYear(end)}`
+            : `a partir de ${inlineMonthYear(start)}`
+        }${onCard ? ", na fatura do cartão" : ""}. Quando o valor de um mês for diferente, lance o valor real em Lançamentos — ele substitui o automático.`,
+    },
+    table: {
+      period: "Período",
+      monthly: "Mensal",
+      since: (month) => `Desde ${inlineMonthYear(month)}`,
+      range: (start, end) => `${monthYear(start)} → ${monthYear(end)}`,
+      ended: "encerrado",
+      upcoming: "futuro",
+      endHint: "Mantém os meses passados e para a partir do mês que vem",
+      end: "Encerrar",
+    },
+  },
+
   controls: {
     previousMonth: "Mês anterior",
     nextMonth: "Próximo mês",

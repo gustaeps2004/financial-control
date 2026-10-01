@@ -4,10 +4,10 @@ import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Button } from "@/shared/ui/Button";
 import { MonthInput } from "@/shared/ui/MonthInput";
-import { currentYearMonth, formatYearMonth, todayIso } from "@/shared/lib/dates";
+import { currentYearMonth, todayIso } from "@/shared/lib/dates";
 import { parseMoneyInput } from "@/shared/lib/money";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/shared/lib/payment-methods";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
 import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
 import { CATEGORY_KINDS, acceptsCreditCard, type Category } from "@/features/categories/types";
@@ -77,6 +77,7 @@ export function RecurringForm({
   const isCredit = paymentMethod === "CREDIT";
   const cardId = values.cardId || (isCredit ? (cards[0]?.id ?? "") : "");
   const day = parseInt(values.dayOfMonth, 10);
+  const isValidDay = day >= 1 && day <= 31;
 
   function update<K extends keyof RecurringFormValues>(field: K, value: RecurringFormValues[K]) {
     setValues((previous) => ({ ...previous, [field]: value }));
@@ -86,12 +87,12 @@ export function RecurringForm({
     event.preventDefault();
     const amount = parseMoneyInput(values.amount);
 
-    if (!values.description.trim()) return setError("Give it a name, like “Internet”.");
-    if (!categoryId) return setError("Pick a category first — add one in Settings.");
-    if (amount <= 0) return setError("Type the monthly amount.");
-    if (!(day >= 1 && day <= 31)) return setError("The day must be between 1 and 31.");
+    if (!values.description.trim()) return setError(t.recurring.form.giveName);
+    if (!categoryId) return setError(t.common.pickCategoryFirst);
+    if (amount <= 0) return setError(t.recurring.form.typeMonthlyAmount);
+    if (!isValidDay) return setError(t.recurring.form.dayRange);
     if (values.endMonth && values.endMonth < values.startMonth) {
-      return setError("It can't end before it starts.");
+      return setError(t.recurring.form.endBeforeStart);
     }
 
     setError(null);
@@ -111,29 +112,25 @@ export function RecurringForm({
         setValues((previous) => ({ ...previous, description: "", amount: "" }));
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't save. Please try again.");
+      setError(errorMessage(err, t, t.common.saveFailed));
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  const period = values.endMonth
-    ? `from ${formatYearMonth(values.startMonth)} to ${formatYearMonth(values.endMonth)}`
-    : `from ${formatYearMonth(values.startMonth)} on`;
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end gap-2">
-        <Field label="Name" htmlFor="rec-description" className="min-w-0 flex-[2_1_150px]">
+        <Field label={t.fields.name} htmlFor="rec-description" className="min-w-0 flex-[2_1_150px]">
           <Input
             id="rec-description"
-            placeholder="Internet"
+            placeholder={t.recurring.form.namePlaceholder}
             maxLength={140}
             value={values.description}
             onChange={(e) => update("description", e.target.value)}
           />
         </Field>
-        <Field label="Category" htmlFor="rec-category" className="min-w-0 flex-[1_1_150px]">
+        <Field label={t.fields.category} htmlFor="rec-category" className="min-w-0 flex-[1_1_150px]">
           <Select
             id="rec-category"
             value={categoryId}
@@ -154,7 +151,7 @@ export function RecurringForm({
             })}
           </Select>
         </Field>
-        <Field label="Monthly amount" htmlFor="rec-amount" className="flex-[0_1_130px]">
+        <Field label={t.recurring.form.monthlyAmount} htmlFor="rec-amount" className="flex-[0_1_130px]">
           <Input
             id="rec-amount"
             inputMode="decimal"
@@ -163,7 +160,7 @@ export function RecurringForm({
             onChange={(e) => update("amount", e.target.value)}
           />
         </Field>
-        <Field label="Day" htmlFor="rec-day" className="flex-[0_1_72px]">
+        <Field label={t.fields.day} htmlFor="rec-day" className="flex-[0_1_72px]">
           <Input
             id="rec-day"
             type="number"
@@ -175,30 +172,30 @@ export function RecurringForm({
         </Field>
       </div>
       <div className="flex flex-wrap items-end gap-2">
-        <Field label="Starts" htmlFor="rec-start" className="min-w-0 flex-[1_1_210px]">
+        <Field label={t.recurring.form.starts} htmlFor="rec-start" className="min-w-0 flex-[1_1_210px]">
           <MonthInput
             id="rec-start"
-            label="Starts"
+            label={t.recurring.form.starts}
             value={values.startMonth}
             onChange={(value) => update("startMonth", value || currentYearMonth())}
           />
         </Field>
-        <Field label="Ends" htmlFor="rec-end" className="min-w-0 flex-[1_1_210px]">
+        <Field label={t.recurring.form.ends} htmlFor="rec-end" className="min-w-0 flex-[1_1_210px]">
           <MonthInput
             id="rec-end"
-            label="Ends"
-            emptyLabel="No end"
+            label={t.recurring.form.ends}
+            emptyLabel={t.recurring.form.noEnd}
             value={values.endMonth}
             onChange={(value) => update("endMonth", value)}
           />
         </Field>
-        <Field label="Paid with" htmlFor="rec-method" className="min-w-0 flex-[1_1_140px]">
+        <Field label={t.fields.paidWith} htmlFor="rec-method" className="min-w-0 flex-[1_1_140px]">
           <Select
             id="rec-method"
             value={paymentMethod}
             onChange={(e) => update("paymentMethod", e.target.value as PaymentMethod | "")}
           >
-            <option value="">Not informed</option>
+            <option value="">{t.common.notInformed}</option>
             {PAYMENT_METHODS.map((method) => (
               <option key={method} value={method} disabled={method === "CREDIT" && !creditAllowed}>
                 {t.paymentMethods[method]}
@@ -207,7 +204,7 @@ export function RecurringForm({
           </Select>
         </Field>
         <Field
-          label={isCredit ? "Card" : "Account"}
+          label={isCredit ? t.fields.card : t.fields.account}
           htmlFor="rec-card"
           className="min-w-0 flex-[1_1_140px]"
         >
@@ -222,19 +219,22 @@ export function RecurringForm({
         </Field>
         <div className="flex flex-none gap-1.5">
           <Button type="submit" variant="primary" disabled={isSubmitting}>
-            {isSubmitting ? "Saving…" : submitLabel}
+            {isSubmitting ? t.common.saving : submitLabel}
           </Button>
           {onCancel && (
             <Button variant="secondary" onClick={onCancel}>
-              Cancel
+              {t.common.cancel}
             </Button>
           )}
         </div>
       </div>
       <p className="m-0 text-[11.5px] text-ink/55">
-        Posted automatically on day {day >= 1 && day <= 31 ? day : "…"} of every month {period}
-        {isCredit ? ", on the card's statement" : ""}. When a month's value differs, log the
-        actual one from Transactions — it replaces the automatic one.
+        {t.recurring.form.explanation(
+          isValidDay ? day : null,
+          values.startMonth,
+          values.endMonth || null,
+          isCredit,
+        )}
       </p>
       {error && <p className="m-0 text-[12px] text-accent-300">{error}</p>}
     </form>

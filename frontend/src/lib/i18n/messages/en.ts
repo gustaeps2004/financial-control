@@ -367,6 +367,46 @@ export const en = {
     },
   },
 
+  recurring: {
+    title: "Recurring",
+    intro: (activeCount: number, total: string) =>
+      `Bills, subscriptions and income that repeat every month post themselves — months ahead show up as projections. ${activeCount} active this month, ${total} in total.`,
+    addTitle: "Add something that repeats",
+    empty: "Nothing repeats yet. Add your first fixed bill above.",
+    loadFailed: "Couldn't load the recurring items.",
+    editTitle: "Edit recurring",
+    confirmDelete: (name: string) =>
+      `Delete "${name}"? Its automatic entries disappear from every month, past ones included. To stop it from now on, use End instead.`,
+    deleteFailed: (name: string) => `Couldn't delete "${name}".`,
+    endFailed: (name: string) => `Couldn't end "${name}".`,
+    form: {
+      namePlaceholder: "Internet",
+      monthlyAmount: "Monthly amount",
+      starts: "Starts",
+      ends: "Ends",
+      noEnd: "No end",
+      giveName: "Give it a name, like “Internet”.",
+      typeMonthlyAmount: "Type the monthly amount.",
+      dayRange: "The day must be between 1 and 31.",
+      endBeforeStart: "It can't end before it starts.",
+      // `day` is null while the field doesn't hold a valid day.
+      explanation: (day: number | null, start: string, end: string | null, onCard: boolean) =>
+        `Posted automatically on day ${day ?? "…"} of every month ${
+          end ? `from ${monthYear(start)} to ${monthYear(end)}` : `from ${monthYear(start)} on`
+        }${onCard ? ", on the card's statement" : ""}. When a month's value differs, log the actual one from Transactions — it replaces the automatic one.`,
+    },
+    table: {
+      period: "Period",
+      monthly: "Monthly",
+      since: (month: string) => `Since ${monthYear(month)}`,
+      range: (start: string, end: string) => `${monthYear(start)} → ${monthYear(end)}`,
+      ended: "ended",
+      upcoming: "upcoming",
+      endHint: "Keep it in the past, stop it from next month on",
+      end: "End",
+    },
+  },
+
   controls: {
     previousMonth: "Previous month",
     nextMonth: "Next month",

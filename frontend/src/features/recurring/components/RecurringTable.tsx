@@ -2,9 +2,10 @@ import { PencilSimple, X } from "@phosphor-icons/react";
 import { Table, TableBody, TableHead, TableRow, Td, Th } from "@/shared/ui/Table";
 import { Tag } from "@/shared/ui/Tag";
 import { cn } from "@/shared/lib/cn";
-import { currentYearMonth, formatYearMonth } from "@/shared/lib/dates";
+import { currentYearMonth } from "@/shared/lib/dates";
 import { formatMoney } from "@/shared/lib/money";
 import { useI18n } from "@/lib/i18n/i18n-context";
+import type { Messages } from "@/lib/i18n/messages/en";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
 import { useCards } from "@/features/cards/context/CardsContext";
 import type { RecurringTransaction } from "../types";
@@ -29,9 +30,10 @@ function statusOf(item: RecurringTransaction, thisMonth: string): Status {
   return "ACTIVE";
 }
 
-function periodLabel(item: RecurringTransaction): string {
-  const start = formatYearMonth(item.startMonth);
-  return item.endMonth ? `${start} → ${formatYearMonth(item.endMonth)}` : `Since ${start}`;
+function periodLabel(item: RecurringTransaction, t: Messages): string {
+  return item.endMonth
+    ? t.recurring.table.range(item.startMonth, item.endMonth)
+    : t.recurring.table.since(item.startMonth);
 }
 
 export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemove }: RecurringTableProps) {
@@ -50,12 +52,12 @@ export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemov
     <div className="overflow-x-auto">
       <Table>
         <TableHead>
-          <Th>Name</Th>
-          <Th>Category</Th>
-          <Th className="w-14">Day</Th>
-          <Th>Period</Th>
-          <Th>Paid with</Th>
-          <Th className="text-right">Monthly</Th>
+          <Th>{t.fields.name}</Th>
+          <Th>{t.fields.category}</Th>
+          <Th className="w-14">{t.fields.day}</Th>
+          <Th>{t.recurring.table.period}</Th>
+          <Th>{t.fields.paidWith}</Th>
+          <Th className="text-right">{t.recurring.table.monthly}</Th>
           {hasActions && <Th className="w-px" />}
         </TableHead>
         <TableBody>
@@ -75,9 +77,13 @@ export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemov
                 <Td>{category ? <Tag>{category.name}</Tag> : <span className="text-ink/45">—</span>}</Td>
                 <Td className="tabular-nums text-ink/60">{item.dayOfMonth}</Td>
                 <Td className="text-[12.5px]">
-                  <span className="text-ink/75">{periodLabel(item)}</span>
-                  {status === "ENDED" && <span className="ml-1.5 text-ink/45">· ended</span>}
-                  {status === "STARTS" && <span className="ml-1.5 text-accent">· upcoming</span>}
+                  <span className="text-ink/75">{periodLabel(item, t)}</span>
+                  {status === "ENDED" && (
+                    <span className="ml-1.5 text-ink/45">· {t.recurring.table.ended}</span>
+                  )}
+                  {status === "STARTS" && (
+                    <span className="ml-1.5 text-accent">· {t.recurring.table.upcoming}</span>
+                  )}
                 </Td>
                 <Td className="text-[12.5px] text-ink/60">{paidWith || "—"}</Td>
                 <Td className="text-right whitespace-nowrap tabular-nums">{formatMoney(item.amount)}</Td>
@@ -86,7 +92,7 @@ export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemov
                     {onEdit && (
                       <button
                         type="button"
-                        aria-label={`Edit ${item.description}`}
+                        aria-label={t.common.edit(item.description)}
                         className={iconButtonClasses}
                         onClick={() => onEdit(item)}
                       >
@@ -96,17 +102,17 @@ export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemov
                     {onEnd && (status === "ACTIVE" || status === "ENDING") && (
                       <button
                         type="button"
-                        title="Keep it in the past, stop it from next month on"
+                        title={t.recurring.table.endHint}
                         className="cursor-pointer rounded-md border-0 bg-transparent px-2 py-1 text-[12px] text-accent hover:bg-accent/10"
                         onClick={() => onEnd(item)}
                       >
-                        End
+                        {t.recurring.table.end}
                       </button>
                     )}
                     {onRemove && (
                       <button
                         type="button"
-                        aria-label={`Delete ${item.description}`}
+                        aria-label={t.common.delete(item.description)}
                         className={iconButtonClasses}
                         onClick={() => onRemove(item)}
                       >
