@@ -11,6 +11,7 @@ import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
 import { TransactionsPage } from "@/features/transactions/pages/TransactionsPage";
 import { RecurringPage } from "@/features/recurring/pages/RecurringPage";
 import { StatementsPage } from "@/features/statements/pages/StatementsPage";
+import { AnnualPage } from "@/features/annual/pages/AnnualPage";
 import { SettingsPage } from "@/features/settings/pages/SettingsPage";
 import { AppShell } from "./AppShell";
 import { AuthenticatedArea } from "./AuthenticatedArea";
@@ -56,6 +57,7 @@ export function App() {
               <Route path="transactions" element={<TransactionsPage />} />
               <Route path="recurring" element={<RecurringPage />} />
               <Route path="statements" element={<StatementsPage />} />
+              <Route path="year" element={<AnnualPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
           </Route>

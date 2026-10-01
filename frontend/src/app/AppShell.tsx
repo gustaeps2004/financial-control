@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
+  CalendarBlank,
   CreditCard,
   Gear,
   ListBullets,
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
   { to: "/app/transactions", label: "Transactions", Icon: ListBullets },
   { to: "/app/statements", label: "Statements", Icon: CreditCard },
   { to: "/app/recurring", label: "Recurring", Icon: Repeat },
+  { to: "/app/year", label: "Year", Icon: CalendarBlank },
   { to: "/app/settings", label: "Settings", Icon: Gear },
 ];
 
