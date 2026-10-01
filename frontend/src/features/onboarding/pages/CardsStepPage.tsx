@@ -7,17 +7,15 @@ import { Input } from "@/shared/ui/Input";
 import { Card } from "@/shared/ui/Card";
 import { cn } from "@/shared/lib/cn";
 import { formatMoney, parseMoneyInput } from "@/shared/lib/money";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCards } from "@/features/cards/context/CardsContext";
 import { CARD_BRANDS } from "../constants";
-
-function errorMessage(err: unknown, fallback: string): string {
-  return err instanceof ApiError ? err.message : fallback;
-}
 
 export function CardsStepPage() {
   const { cards, addCard, updateCard, removeCard, removeCardsByBrand } = useCards();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
 
   async function toggleBrand(brand: (typeof CARD_BRANDS)[number]) {
@@ -31,11 +29,11 @@ export function CardsStepPage() {
           brand: brand.name,
           mark: brand.mark,
           swatch: brand.swatch,
-          nick: `${brand.name} card`,
+          nick: t.cards.defaultNickname(brand.name),
         });
       }
     } catch (err) {
-      setError(errorMessage(err, "Couldn't update your cards. Please try again."));
+      setError(errorMessage(err, t, t.cards.updateFailed));
     }
   }
 
@@ -47,7 +45,7 @@ export function CardsStepPage() {
       setError(null);
       await updateCard(id, patch);
     } catch (err) {
-      setError(errorMessage(err, "Couldn't save that change. Please try again."));
+      setError(errorMessage(err, t, t.cards.saveFailed));
     }
   }
 
@@ -56,16 +54,15 @@ export function CardsStepPage() {
       setError(null);
       await removeCard(id);
     } catch (err) {
-      setError(errorMessage(err, "Couldn't remove that card. Please try again."));
+      setError(errorMessage(err, t, t.cards.removeFailed));
     }
   }
 
   return (
     <div>
-      <h2 className="mb-2">Which cards do you carry?</h2>
+      <h2 className="mb-2">{t.onboarding.cards.title}</h2>
       <p className="mb-6 max-w-[490px] text-[14px] text-ink/55 text-pretty">
-        Pick the brands you own, then name each one. These become the options you see
-        when logging a purchase.
+        {t.onboarding.cards.intro}
       </p>
 
       <div className="mb-7.5 grid max-w-[760px] grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-2.5">
@@ -95,7 +92,7 @@ export function CardsStepPage() {
         })}
       </div>
 
-      <h5 className="mb-3">Your cards</h5>
+      <h5 className="mb-3">{t.onboarding.cards.yourCards}</h5>
       <div className="mb-3 flex max-w-[840px] flex-col gap-2.5">
         {cards.map((card) => (
           <Card key={card.id} className="flex-row flex-wrap items-end gap-3 p-3">
@@ -105,14 +102,14 @@ export function CardsStepPage() {
             >
               {card.mark}
             </span>
-            <Field label="Nickname" className="min-w-0 flex-[2_1_140px]">
+            <Field label={t.cards.nickname} className="min-w-0 flex-[2_1_140px]">
               <Input
                 key={`${card.id}-nick`}
                 defaultValue={card.nick}
                 onBlur={(e) => void commitField(card.id, { nick: e.target.value })}
               />
             </Field>
-            <Field label="Limit" className="flex-[0_1_112px]">
+            <Field label={t.cards.limit} className="flex-[0_1_112px]">
               <Input
                 key={`${card.id}-limit`}
                 defaultValue={formatMoney(card.limit)}
@@ -121,7 +118,7 @@ export function CardsStepPage() {
                 }
               />
             </Field>
-            <Field label="Closes day" className="flex-[0_1_96px]">
+            <Field label={t.cards.closingDay} className="flex-[0_1_96px]">
               <Input
                 key={`${card.id}-closeDay`}
                 inputMode="numeric"
@@ -129,7 +126,7 @@ export function CardsStepPage() {
                 onBlur={(e) => void commitField(card.id, { closeDay: e.target.value })}
               />
             </Field>
-            <Field label="Due day" className="flex-[0_1_96px]">
+            <Field label={t.cards.dueDay} className="flex-[0_1_96px]">
               <Input
                 key={`${card.id}-dueDay`}
                 inputMode="numeric"
@@ -143,7 +140,7 @@ export function CardsStepPage() {
               className="mb-1 flex-none"
               onClick={() => void handleRemove(card.id)}
             >
-              Remove
+              {t.cards.remove}
             </Button>
           </Card>
         ))}
@@ -151,9 +148,7 @@ export function CardsStepPage() {
 
       {cards.length > 0 && (
         <p className="mb-4 max-w-[640px] text-[12px] text-ink/55 text-pretty">
-          Purchases up to the closing day land on that month's statement; later ones roll
-          to the next. Statements are named after the month they're due — leave the due
-          day empty if the bill is due in the same month it closes.
+          {t.onboarding.cards.statementRule}
         </p>
       )}
 
@@ -161,10 +156,10 @@ export function CardsStepPage() {
 
       <div className="flex gap-2">
         <Button variant="primary" onClick={() => navigate("/setup/recurring")}>
-          Continue
+          {t.common.continue}
         </Button>
         <Button variant="secondary" onClick={() => navigate("/setup/categories")}>
-          Back
+          {t.common.back}
         </Button>
       </div>
     </div>

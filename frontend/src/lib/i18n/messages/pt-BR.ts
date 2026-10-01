@@ -109,6 +109,59 @@ export const ptBR: Messages = {
     removeFailed: "Não foi possível remover a categoria. Tente de novo.",
   },
 
+  cards: {
+    defaultNickname: (brand) => `Cartão ${brand}`,
+    nickname: "Apelido",
+    limit: "Limite",
+    closingDay: "Dia de fechamento",
+    dueDay: "Dia do vencimento",
+    remove: "Remover",
+    removed: "(removido)",
+    none: "Nenhum cartão ainda.",
+    add: "Adicionar cartão",
+    updateFailed: "Não foi possível atualizar seus cartões. Tente de novo.",
+    saveFailed: "Não foi possível salvar essa alteração. Tente de novo.",
+    removeFailed: "Não foi possível remover esse cartão. Tente de novo.",
+  },
+
+  onboarding: {
+    steps: {
+      categories: "Categorias",
+      cards: "Cartões",
+      recurring: "Recorrentes e faturas",
+    },
+    categories: {
+      title: "Como funciona o seu mês?",
+      intro:
+        "Dê nome às suas próprias categorias — tudo o que você gostaria de ver como uma linha do seu mês — e diga o que cada uma é: dinheiro que entra, uma conta que se repete, gasto do dia a dia ou dinheiro que você guarda. Dá para adicionar mais a qualquer momento.",
+      placeholder: "ex.: Café, Cachorro, Projeto",
+      count: (count) =>
+        `${count} ${count === 1 ? "categoria" : "categorias"}. A maioria das pessoas fica entre oito e quinze.`,
+      skip: "Pular por enquanto",
+    },
+    cards: {
+      title: "Quais cartões você usa?",
+      intro:
+        "Escolha os bancos dos seus cartões e dê um nome a cada um. Eles viram as opções que aparecem quando você lança uma compra.",
+      yourCards: "Seus cartões",
+      statementRule:
+        "Compras até o dia de fechamento caem na fatura daquele mês; as feitas depois vão para a próxima. Cada fatura leva o nome do mês em que vence — deixe o dia do vencimento vazio se a fatura vence no mesmo mês em que fecha.",
+    },
+    recurring: {
+      title: "O que se repete todo mês?",
+      intro:
+        "Contas fixas, assinaturas e até o seu salário são lançados sozinhos todo mês — os meses futuros aparecem como projeção. Depois, conte o que a fatura atual de cada cartão já tem, para o seu primeiro mês já começar com os números certos.",
+      heading: "Recorrentes",
+      empty: "Nada ainda — aluguel, internet, financiamento, assinaturas…",
+      removeFailed: "Não foi possível remover. Tente de novo.",
+      monthlyTotal: (amount) => `${amount} por mês em recorrentes neste mês.`,
+      cardsTitle: "O que seus cartões já têm",
+      cardsIntro:
+        "Parcelas de compras antigas e tudo o que já está na fatura atual. As próximas faturas você ajusta depois, em Faturas.",
+      finish: "Concluir configuração",
+    },
+  },
+
   controls: {
     previousMonth: "Mês anterior",
     nextMonth: "Próximo mês",

@@ -118,6 +118,59 @@ export const en = {
     removeFailed: "Couldn't remove category. Please try again.",
   },
 
+  cards: {
+    defaultNickname: (brand: string) => `${brand} card`,
+    nickname: "Nickname",
+    limit: "Limit",
+    closingDay: "Closes day",
+    dueDay: "Due day",
+    remove: "Remove",
+    removed: "(removed)",
+    none: "No cards yet.",
+    add: "Add a card",
+    updateFailed: "Couldn't update your cards. Please try again.",
+    saveFailed: "Couldn't save that change. Please try again.",
+    removeFailed: "Couldn't remove that card. Please try again.",
+  },
+
+  onboarding: {
+    steps: {
+      categories: "Categories",
+      cards: "Cards",
+      recurring: "Recurring & balances",
+    },
+    categories: {
+      title: "How does your month work?",
+      intro:
+        "Name your own categories — anything you'd want to see as a line on your month — and say what each one is: money coming in, a bill that repeats, day-to-day spending, or money you put aside. Add more any time.",
+      placeholder: "e.g. Coffee, Dog, Side project",
+      count: (count: number) =>
+        `${count} ${count === 1 ? "category" : "categories"}. Most people land between eight and fifteen.`,
+      skip: "Skip for now",
+    },
+    cards: {
+      title: "Which cards do you carry?",
+      intro:
+        "Pick the brands you own, then name each one. These become the options you see when logging a purchase.",
+      yourCards: "Your cards",
+      statementRule:
+        "Purchases up to the closing day land on that month's statement; later ones roll to the next. Statements are named after the month they're due — leave the due day empty if the bill is due in the same month it closes.",
+    },
+    recurring: {
+      title: "What repeats every month?",
+      intro:
+        "Fixed bills, subscriptions and even your salary post themselves every month — future months show up as projections. Then tell us what each card's current statement already carries, so your first month starts from the truth.",
+      heading: "Recurring",
+      empty: "Nothing yet — rent, internet, financing, subscriptions…",
+      removeFailed: "Couldn't remove it. Please try again.",
+      monthlyTotal: (amount: string) => `${amount} a month in recurring items this month.`,
+      cardsTitle: "What your cards already carry",
+      cardsIntro:
+        "Installments of older purchases and anything else already on the current statement. You can set the next statements later, in Statements.",
+      finish: "Finish setup",
+    },
+  },
+
   controls: {
     previousMonth: "Previous month",
     nextMonth: "Next month",

@@ -1,8 +1,11 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { cn } from "@/shared/lib/cn";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { SETUP_STEPS } from "../constants";
 
 export function SetupLayout() {
+  const { t } = useI18n();
+
   return (
     <div className="mx-auto max-w-[1000px] px-8 pt-10 pb-18">
       <div className="mb-8 flex flex-wrap items-center gap-3">
@@ -27,7 +30,7 @@ export function SetupLayout() {
                       isActive ? "text-ink" : "text-neutral-600",
                     )}
                   >
-                    {step.label}
+                    {t.onboarding.steps[step.key]}
                   </span>
                 </>
               )}

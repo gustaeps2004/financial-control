@@ -4,7 +4,8 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { currentYearMonth } from "@/shared/lib/dates";
 import { formatMoney } from "@/shared/lib/money";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCards } from "@/features/cards/context/CardsContext";
 import { RecurringForm } from "@/features/recurring/components/RecurringForm";
 import { RecurringTable } from "@/features/recurring/components/RecurringTable";
@@ -15,6 +16,7 @@ export function RecurringStepPage() {
   const { recurring, createRecurring, removeRecurring } = useRecurringTransactions();
   const { cards } = useCards();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
 
   const thisMonth = currentYearMonth();
@@ -27,23 +29,21 @@ export function RecurringStepPage() {
       setError(null);
       await removeRecurring(id);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't remove it. Please try again.");
+      setError(errorMessage(err, t, t.onboarding.recurring.removeFailed));
     }
   }
 
   return (
     <div>
-      <h2 className="mb-2">What repeats every month?</h2>
+      <h2 className="mb-2">{t.onboarding.recurring.title}</h2>
       <p className="mb-6.5 max-w-[560px] text-[14px] text-ink/55 text-pretty">
-        Fixed bills, subscriptions and even your salary post themselves every month — future
-        months show up as projections. Then tell us what each card's current statement
-        already carries, so your first month starts from the truth.
+        {t.onboarding.recurring.intro}
       </p>
 
-      <h5 className="mb-2.5">Recurring</h5>
+      <h5 className="mb-2.5">{t.onboarding.recurring.heading}</h5>
       <Card className="mb-3.5 max-w-[920px] p-3.5">
         <RecurringForm
-          submitLabel="Add"
+          submitLabel={t.common.add}
           resetAfterSubmit
           onSubmit={async (input) => {
             await createRecurring(input);
@@ -53,21 +53,20 @@ export function RecurringStepPage() {
       <div className="mb-2 max-w-[920px]">
         <RecurringTable
           recurring={recurring}
-          emptyMessage="Nothing yet — rent, internet, financing, subscriptions…"
+          emptyMessage={t.onboarding.recurring.empty}
           onRemove={(item) => void handleRemove(item.id)}
         />
       </div>
       {error && <p className="mb-3 text-[12px] text-accent-300">{error}</p>}
       <p className="mb-8 text-[12.5px] text-ink/55">
-        {formatMoney(monthlyTotal)} a month in recurring items this month.
+        {t.onboarding.recurring.monthlyTotal(formatMoney(monthlyTotal))}
       </p>
 
       {cards.length > 0 && (
         <>
-          <h5 className="mb-1">What your cards already carry</h5>
+          <h5 className="mb-1">{t.onboarding.recurring.cardsTitle}</h5>
           <p className="mb-3 max-w-[560px] text-[12.5px] text-ink/55 text-pretty">
-            Installments of older purchases and anything else already on the current
-            statement. You can set the next statements later, in Statements.
+            {t.onboarding.recurring.cardsIntro}
           </p>
           <div className="mb-2 grid max-w-[920px] gap-2.5 [grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]">
             {cards.map((card) => (
@@ -90,10 +89,10 @@ export function RecurringStepPage() {
 
       <div className="mt-7.5 flex gap-2">
         <Button variant="primary" onClick={() => navigate("/app/dashboard")}>
-          Finish setup
+          {t.onboarding.recurring.finish}
         </Button>
         <Button variant="secondary" onClick={() => navigate("/setup/cards")}>
-          Back
+          {t.common.back}
         </Button>
       </div>
     </div>

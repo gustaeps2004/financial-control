@@ -16,7 +16,7 @@ export const CARD_BRANDS: BrandOption[] = [
 ];
 
 export const SETUP_STEPS = [
-  { n: 1, label: "Categories", path: "/setup/categories" },
-  { n: 2, label: "Cards", path: "/setup/cards" },
-  { n: 3, label: "Recurring & balances", path: "/setup/recurring" },
-];
+  { n: 1, key: "categories", path: "/setup/categories" },
+  { n: 2, key: "cards", path: "/setup/cards" },
+  { n: 3, key: "recurring", path: "/setup/recurring" },
+] as const;
