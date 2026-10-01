@@ -74,6 +74,47 @@ export const en = {
     label: "Language",
   },
 
+  auth: {
+    login: {
+      heroTitle: "Every real,\naccounted for.",
+      heroText:
+        "Categories you name yourself, the cards you actually carry, and a month that finally adds up.",
+      privateByDefault: "Private by default",
+      noBankLinking: "No bank linking",
+      title: "Sign in",
+      welcomeBack: (name: string | null) => (name ? `Welcome back, ${name}.` : "Welcome back."),
+      keepSignedIn: "Keep me signed in",
+      forgot: "Forgot?",
+      submit: "Sign in",
+      submitting: "Signing in…",
+      createAccount: "Create an account",
+      failed: "Couldn't sign in. Please try again.",
+    },
+    signup: {
+      heroTitle: "Three fields,\nthen you're tracking.",
+      heroText:
+        "Setup takes two minutes: name your categories, add your cards, set what repeats every month.",
+      step: (step: number, total: number) => `Step ${step} of ${total}`,
+      title: "Create your account",
+      subtitle: "Free, and no card required.",
+      namePlaceholder: "Ana Ferreira",
+      emailPlaceholder: "you@example.com",
+      passwordPlaceholder: "At least 8 characters",
+      acceptTerms: "I agree to the Terms of Use and Privacy Policy",
+      submit: "Create account",
+      submitting: "Creating account…",
+      haveAccount: "Already have one?",
+      signIn: "Sign in",
+      failed: "Couldn't create your account. Please try again.",
+    },
+    passwordStrength: {
+      tooShort: "At least 8 characters required.",
+      weak: "Weak — try adding a number or symbol.",
+      good: "Good — a few more characters makes it stronger.",
+      strong: "Strong password.",
+    },
+  },
+
   // Keyed by the `code` of the API's error responses.
   apiErrors: {
     NETWORK_ERROR: "Couldn't reach the server. Check your connection and try again.",

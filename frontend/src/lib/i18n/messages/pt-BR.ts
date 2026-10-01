@@ -67,6 +67,48 @@ export const ptBR: Messages = {
     label: "Idioma",
   },
 
+  auth: {
+    login: {
+      heroTitle: "Cada real,\nna ponta do lápis.",
+      heroText:
+        "Categorias com os nomes que você escolhe, os cartões que você usa de verdade e um mês que finalmente fecha.",
+      privateByDefault: "Privado por padrão",
+      noBankLinking: "Sem conexão com o banco",
+      title: "Entrar",
+      welcomeBack: (name) =>
+        name ? `Que bom ver você de novo, ${name}.` : "Que bom ver você de novo.",
+      keepSignedIn: "Lembrar de mim",
+      forgot: "Esqueceu?",
+      submit: "Entrar",
+      submitting: "Entrando…",
+      createAccount: "Criar uma conta",
+      failed: "Não foi possível entrar. Tente de novo.",
+    },
+    signup: {
+      heroTitle: "Três campos,\ne o controle é seu.",
+      heroText:
+        "A configuração leva dois minutos: dê nome às suas categorias, adicione seus cartões e defina o que se repete todo mês.",
+      step: (step, total) => `Passo ${step} de ${total}`,
+      title: "Crie sua conta",
+      subtitle: "Grátis e sem pedir cartão.",
+      namePlaceholder: "Ana Ferreira",
+      emailPlaceholder: "voce@exemplo.com.br",
+      passwordPlaceholder: "Pelo menos 8 caracteres",
+      acceptTerms: "Concordo com os Termos de Uso e a Política de Privacidade",
+      submit: "Criar conta",
+      submitting: "Criando conta…",
+      haveAccount: "Já tem uma conta?",
+      signIn: "Entrar",
+      failed: "Não foi possível criar sua conta. Tente de novo.",
+    },
+    passwordStrength: {
+      tooShort: "Use pelo menos 8 caracteres.",
+      weak: "Fraca — tente adicionar um número ou símbolo.",
+      good: "Boa — mais alguns caracteres a deixam mais forte.",
+      strong: "Senha forte.",
+    },
+  },
+
   apiErrors: {
     NETWORK_ERROR: "Não foi possível falar com o servidor. Verifique sua conexão e tente de novo.",
     BAD_REQUEST: "Alguns valores não são válidos. Confira e tente de novo.",
