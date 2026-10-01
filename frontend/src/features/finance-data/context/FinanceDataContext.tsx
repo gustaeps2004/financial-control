@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { loadFinanceData, saveFinanceData } from "../lib/storage";
-import type { FinanceData, PaymentMethod, RecurringItem, Transaction } from "../types";
+import type { FinanceData, PaymentMethod, Transaction } from "../types";
 
 interface NewTransactionInput {
   year: number;
@@ -22,8 +22,6 @@ interface NewTransactionInput {
 }
 
 interface FinanceDataContextValue extends FinanceData {
-  addRecurring: (input: Omit<RecurringItem, "id">) => void;
-  removeRecurring: (id: string) => void;
   addTransaction: (input: NewTransactionInput) => void;
   removeTransaction: (id: string) => void;
 }
@@ -47,18 +45,6 @@ export function FinanceDataProvider({ children }: { children: ReactNode }) {
 
   const value: FinanceDataContextValue = {
     ...data,
-
-    addRecurring: (input) => {
-      const item: RecurringItem = { id: makeId("rec"), ...input };
-      setData((prev) => ({ ...prev, recurring: [...prev.recurring, item] }));
-    },
-
-    removeRecurring: (id) => {
-      setData((prev) => ({
-        ...prev,
-        recurring: prev.recurring.filter((r) => r.id !== id),
-      }));
-    },
 
     addTransaction: (input) => {
       const txn: Transaction = { id: makeId("txn"), ...input };
