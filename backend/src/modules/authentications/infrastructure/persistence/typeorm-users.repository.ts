@@ -34,4 +34,10 @@ export class TypeOrmUsersRepository extends UsersRepository {
     const saved = await this.repository.save(UserMapper.toPersistence(user));
     return UserMapper.toDomain(saved);
   }
+
+  // A real DELETE, not a soft one: every table owned by the user references
+  // it with ON DELETE CASCADE, so the account's data goes with it.
+  async delete(user: User): Promise<void> {
+    await this.repository.delete(user.id!);
+  }
 }

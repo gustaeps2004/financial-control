@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
   Patch,
@@ -8,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from '../../application/dto/create-user.dto';
+import { DeleteAccountDto } from '../../application/dto/delete-account.dto';
 import { UpdateUserNameDto } from '../../application/dto/update-user-name.dto';
 import { UsersService } from '../../application/users.service';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -35,5 +37,15 @@ export class UsersController {
   ): Promise<UserResponseDto> {
     const user = await this.usersService.updateName(currentUser.sub, dto);
     return new UserResponseDto(user);
+  }
+
+  @Delete('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteAccount(
+    @CurrentUser() currentUser: AuthTokenPayload,
+    @Body() dto: DeleteAccountDto,
+  ): Promise<void> {
+    await this.usersService.deleteAccount(currentUser.sub, dto);
   }
 }

@@ -2,11 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../domain/entities/user.entity';
 import { AuthProvider } from '../domain/enums/auth-provider.enum';
 import { EmailAlreadyRegisteredException } from '../domain/exceptions/email-already-registered.exception';
+import { IncorrectPasswordException } from '../domain/exceptions/incorrect-password.exception';
 import { UserNotFoundException } from '../domain/exceptions/user-not-found.exception';
 import { UsernameAlreadyRegisteredException } from '../domain/exceptions/username-already-registered.exception';
 import { PasswordHasher } from '../domain/ports/password-hasher';
 import { UsersRepository } from '../domain/repositories/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
+import { DeleteAccountDto } from './dto/delete-account.dto';
 import { UpdateUserNameDto } from './dto/update-user-name.dto';
 
 @Injectable()
@@ -56,5 +58,22 @@ export class UsersService {
     user.name = dto.name;
 
     return this.usersRepository.save(user);
+  }
+
+  /** Erases the account and everything recorded under it, for good. */
+  async deleteAccount(userId: string, dto: DeleteAccountDto): Promise<void> {
+    const user = await this.usersRepository.findById(userId);
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+
+    if (
+      !user.password ||
+      !(await this.passwordHasher.verify(user.password, dto.password))
+    ) {
+      throw new IncorrectPasswordException();
+    }
+
+    await this.usersRepository.delete(user);
   }
 }

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { User } from '../domain/entities/user.entity';
 import { AuthProvider } from '../domain/enums/auth-provider.enum';
 import { EmailAlreadyRegisteredException } from '../domain/exceptions/email-already-registered.exception';
+import { IncorrectPasswordException } from '../domain/exceptions/incorrect-password.exception';
 import { UserNotFoundException } from '../domain/exceptions/user-not-found.exception';
 import { UsernameAlreadyRegisteredException } from '../domain/exceptions/username-already-registered.exception';
 import { PasswordHasher } from '../domain/ports/password-hasher';
@@ -34,6 +35,7 @@ describe('UsersService', () => {
             findByUsername: jest.fn(),
             findById: jest.fn(),
             save: jest.fn(),
+            delete: jest.fn(),
           },
         },
         {
@@ -135,6 +137,47 @@ describe('UsersService', () => {
       );
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
       expect(repository.save).not.toHaveBeenCalled();
+    });
+  });
+  describe('deleteAccount', () => {
+    const user = Object.assign(new User(), {
+      id: 'user-1',
+      email: 'jdoe@example.com',
+      password: hashedPassword,
+    });
+
+    it('deletes the account once the password is confirmed', async () => {
+      repository.findById.mockResolvedValue(user);
+      passwordHasher.verify.mockResolvedValue(true);
+
+      await service.deleteAccount('user-1', { password: 'super-secret' });
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(passwordHasher.verify).toHaveBeenCalledWith(
+        hashedPassword,
+        'super-secret',
+      );
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.delete).toHaveBeenCalledWith(user);
+    });
+
+    it('keeps the account when the password is wrong', async () => {
+      repository.findById.mockResolvedValue(user);
+      passwordHasher.verify.mockResolvedValue(false);
+
+      await expect(
+        service.deleteAccount('user-1', { password: 'wrong' }),
+      ).rejects.toThrow(IncorrectPasswordException);
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(repository.delete).not.toHaveBeenCalled();
+    });
+
+    it('throws when the account no longer exists', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.deleteAccount('user-1', { password: 'super-secret' }),
+      ).rejects.toThrow(UserNotFoundException);
     });
   });
 });
