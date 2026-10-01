@@ -398,7 +398,7 @@ export const ptBR: Messages = {
       range: (start, end) => `${monthYear(start)} → ${monthYear(end)}`,
       ended: "encerrado",
       upcoming: "futuro",
-      endHint: "Mantém os meses passados e para a partir do mês que vem",
+      endHint: "Mantém os meses passados e encerra a partir do mês que vem",
       end: "Encerrar",
     },
   },
