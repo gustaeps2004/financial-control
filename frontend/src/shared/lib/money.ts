@@ -36,6 +36,11 @@ export function formatMoneyInput(amount: number): string {
   return (amount < 0 ? "-" : "") + formatAmount(amount);
 }
 
+/** "R$ 10,00", or "− R$ 10,00" when negative — for totals that can go below zero. */
+export function formatMoneyWithMinus(amount: number): string {
+  return amount < 0 ? `− ${formatMoney(amount)}` : formatMoney(amount);
+}
+
 /** "− R$ 10,00" or "+ R$ 10,00"; zero has no sign. */
 export function formatSignedMoney(amount: number): string {
   if (amount === 0) return formatMoney(0);
@@ -44,5 +49,6 @@ export function formatSignedMoney(amount: number): string {
 
 /** A ratio as a whole percentage: 0.8206 → "82%". */
 export function formatPercent(ratio: number): string {
-  return `${Math.round(ratio * 100)}%`;
+  const percent = Math.round(ratio * 100);
+  return percent < 0 ? `−${Math.abs(percent)}%` : `${percent}%`;
 }
