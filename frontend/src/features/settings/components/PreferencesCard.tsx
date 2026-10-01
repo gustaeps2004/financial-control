@@ -1,7 +1,6 @@
 import { Card, CardKicker } from "@/shared/ui/Card";
 import { Field } from "@/shared/ui/Field";
 import { Select } from "@/shared/ui/Select";
-import { Checkbox } from "@/shared/ui/Checkbox";
 import { usePreferences } from "../lib/usePreferences";
 
 export function PreferencesCard() {
@@ -33,11 +32,6 @@ export function PreferencesCard() {
           <option value="closing">Card closing day</option>
         </Select>
       </Field>
-      <Checkbox
-        label="Post recurring expenses automatically"
-        checked={preferences.autoPostRecurring}
-        onChange={(e) => updatePreferences({ autoPostRecurring: e.target.checked })}
-      />
     </Card>
   );
 }

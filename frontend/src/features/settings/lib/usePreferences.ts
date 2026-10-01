@@ -4,13 +4,11 @@ import { useAuth } from "@/features/auth/context/AuthContext";
 export interface Preferences {
   currency: "BRL" | "USD" | "EUR";
   monthStart: "calendar" | "closing";
-  autoPostRecurring: boolean;
 }
 
 const DEFAULT_PREFERENCES: Preferences = {
   currency: "BRL",
   monthStart: "calendar",
-  autoPostRecurring: true,
 };
 
 function storageKey(email: string): string {
