@@ -1,4 +1,3 @@
-import { formatYearMonth } from "@/shared/lib/dates";
 import type { Messages } from "@/lib/i18n/messages/en";
 import type { LedgerEntry } from "@/features/reports/types";
 
@@ -11,29 +10,30 @@ export function signedAmount(entry: LedgerEntry): number {
   return entry.kind === "INCOME" ? entry.amount : -entry.amount;
 }
 
-export function entryTitle(entry: LedgerEntry): string {
-  if (entry.source === "CARD_PAYMENT") return `${entry.card?.nickname ?? "Card"} bill`;
+export function entryTitle(entry: LedgerEntry, t: Messages): string {
+  if (entry.source === "CARD_PAYMENT") {
+    return t.transactions.ledger.cardBillOf(entry.card?.nickname ?? null);
+  }
   return entry.description ?? entry.category?.name ?? "—";
 }
 
-export function entryDetail(entry: LedgerEntry): string | null {
+export function entryDetail(entry: LedgerEntry, t: Messages): string | null {
+  const labels = t.transactions.ledger;
   if (entry.source === "CARD_PAYMENT") {
-    return entry.statementMonth
-      ? `Pays the ${formatYearMonth(entry.statementMonth)} statement`
-      : null;
+    return entry.statementMonth ? labels.paysStatement(entry.statementMonth) : null;
   }
   if (entry.source === "RECURRING") {
-    return entry.projected ? "Expected — repeats every month" : "Posted automatically every month";
+    return entry.projected ? labels.expected : labels.postedAutomatically;
   }
   const parts: string[] = [];
-  if (entry.recurringTransactionId) parts.push("This month's value of a recurring item");
-  if (entry.installments > 1) parts.push(`${entry.installments}× installments`);
-  if (entry.statementMonth) parts.push(`on the ${formatYearMonth(entry.statementMonth)} statement`);
+  if (entry.recurringTransactionId) parts.push(labels.recurringValue);
+  if (entry.installments > 1) parts.push(labels.installments(entry.installments));
+  if (entry.statementMonth) parts.push(labels.onStatement(entry.statementMonth));
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
 export function paidWithLabel(entry: LedgerEntry, t: Messages): string {
-  if (entry.source === "CARD_PAYMENT") return "Card bill";
+  if (entry.source === "CARD_PAYMENT") return t.transactions.ledger.cardBill;
   const method = entry.paymentMethod ? t.paymentMethods[entry.paymentMethod] : null;
   return [method, entry.card?.nickname].filter(Boolean).join(" · ") || "—";
 }

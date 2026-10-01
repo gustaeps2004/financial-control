@@ -6,9 +6,10 @@ import { Field } from "@/shared/ui/Field";
 import { Select } from "@/shared/ui/Select";
 import { MonthSwitcher } from "@/shared/ui/MonthSwitcher";
 import { cn } from "@/shared/lib/cn";
-import { currentYearMonth, dateInMonth, formatYearMonth, todayIso } from "@/shared/lib/dates";
+import { currentYearMonth, dateInMonth, todayIso } from "@/shared/lib/dates";
 import { formatMoney, formatMoneyInput } from "@/shared/lib/money";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
 import { useLedger } from "@/features/reports/hooks/use-reports";
 import type { LedgerEntry } from "@/features/reports/types";
@@ -32,6 +33,7 @@ function formValuesOf(entry: LedgerEntry): Partial<TransactionFormValues> {
 }
 
 export function TransactionsPage() {
+  const { t } = useI18n();
   const [month, setMonth] = useState(currentYearMonth);
   const [filterCategory, setFilterCategory] = useState("all");
   const [dialog, setDialog] = useState<DialogState | null>(null);
@@ -67,9 +69,7 @@ export function TransactionsPage() {
         await removeTransaction(entry.transactionId);
       }
     } catch (err) {
-      setActionError(
-        err instanceof ApiError ? err.message : `Couldn't delete "${entryTitle(entry)}".`,
-      );
+      setActionError(errorMessage(err, t, t.transactions.deleteFailed(entryTitle(entry, t))));
     }
   }
 
@@ -77,20 +77,20 @@ export function TransactionsPage() {
     <div>
       <div className="mb-4.5 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h3 className="mb-0.5">Transactions</h3>
+          <h3 className="mb-0.5">{t.transactions.title}</h3>
           <p className="m-0 text-[13px] text-ink/55">
-            {visible.length} entries · {formatMoney(moneyIn)} in · {formatMoney(spent)} spent
+            {t.transactions.summary(visible.length, formatMoney(moneyIn), formatMoney(spent))}
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <MonthSwitcher month={month} onChange={setMonth} />
-          <Field label="Category" htmlFor="filter-category" className="w-[170px]">
+          <Field label={t.fields.category} htmlFor="filter-category" className="w-[196px]">
             <Select
               id="filter-category"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
             >
-              <option value="all">All categories</option>
+              <option value="all">{t.transactions.allCategories}</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -104,12 +104,12 @@ export function TransactionsPage() {
       <Card className="mb-4 gap-3 p-3.5">
         <div className="flex items-center gap-2">
           <PlusCircle size={15} className="text-accent" />
-          <span className="text-[13px] font-medium">Log a transaction</span>
+          <span className="text-[13px] font-medium">{t.transactions.logTitle}</span>
         </div>
         <TransactionForm
           key={month}
           initial={{ date: defaultDate }}
-          submitLabel="Add"
+          submitLabel={t.common.add}
           keepAfterSubmit
           onSubmit={async (input) => {
             await createTransaction(input);
@@ -120,18 +120,14 @@ export function TransactionsPage() {
       {actionError && <p className="mb-3 text-[12.5px] text-accent-300">{actionError}</p>}
       {ledger.error && (
         <p className="mb-3 text-[12.5px] text-accent-300">
-          Couldn't load {formatYearMonth(month)}: {ledger.error.message}
+          {errorMessage(ledger.error, t, t.transactions.loadFailed(month))}
         </p>
       )}
 
       <div className={cn("transition-opacity", ledger.isLoading && "opacity-60")}>
         <LedgerTable
           entries={visible}
-          emptyMessage={
-            ledger.isLoading
-              ? "Loading…"
-              : `Nothing in ${formatYearMonth(month)} yet. Log the first one above.`
-          }
+          emptyMessage={ledger.isLoading ? t.common.loading : t.transactions.empty(month)}
           onEdit={(entry) => setDialog({ mode: "edit", entry })}
           onAdjust={(entry) => setDialog({ mode: "adjust", entry })}
           onRemove={(entry) => void handleRemove(entry)}
@@ -140,20 +136,20 @@ export function TransactionsPage() {
 
       <Dialog
         open={dialog !== null}
-        title={dialog?.mode === "adjust" ? "Log the actual value" : "Edit transaction"}
+        title={dialog?.mode === "adjust" ? t.transactions.adjustTitle : t.transactions.editTitle}
         onClose={() => setDialog(null)}
       >
         {dialog && (
           <TransactionForm
             key={dialog.entry.key}
             initial={formValuesOf(dialog.entry)}
-            submitLabel={dialog.mode === "adjust" ? "Log it" : "Save"}
+            submitLabel={dialog.mode === "adjust" ? t.transactions.logIt : t.common.save}
             recurringTransactionId={dialog.entry.recurringTransactionId}
             knownCategory={dialog.entry.category}
             knownCard={dialog.entry.card}
             context={
               dialog.mode === "adjust"
-                ? `Replaces the automatic "${entryTitle(dialog.entry)}" of ${formatYearMonth(month)}.`
+                ? t.transactions.replacesAutomatic(entryTitle(dialog.entry, t), month)
                 : undefined
             }
             onCancel={() => setDialog(null)}

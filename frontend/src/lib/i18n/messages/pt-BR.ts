@@ -20,6 +20,11 @@ function monthYear(yearMonth: string): string {
   return `${MONTHS[month - 1]} de ${year}`;
 }
 
+/** "outubro de 2026": months are lowercase mid-sentence. */
+function inlineMonthYear(yearMonth: string): string {
+  return monthYear(yearMonth).toLowerCase();
+}
+
 export const ptBR: Messages = {
   dates: {
     months: MONTHS,
@@ -107,6 +112,7 @@ export const ptBR: Messages = {
     addFailed: "Não foi possível adicionar a categoria. Tente de novo.",
     changeFailed: "Não foi possível alterar essa categoria. Tente de novo.",
     removeFailed: "Não foi possível remover a categoria. Tente de novo.",
+    removed: "(removida)",
   },
 
   cards: {
@@ -238,6 +244,50 @@ export const ptBR: Messages = {
       happened: "Realizado",
       projection: "Projeção",
       selected: "Mês selecionado",
+    },
+  },
+
+  transactions: {
+    title: "Lançamentos",
+    summary: (count, moneyIn, spent) =>
+      `${count} ${count === 1 ? "lançamento" : "lançamentos"} · ${moneyIn} de entradas · ${spent} de gastos`,
+    allCategories: "Todas as categorias",
+    logTitle: "Novo lançamento",
+    deleteFailed: (title) => `Não foi possível excluir "${title}".`,
+    loadFailed: (month) => `Não foi possível carregar ${inlineMonthYear(month)}.`,
+    empty: (month) => `Nada em ${inlineMonthYear(month)} ainda. Faça o primeiro lançamento acima.`,
+    adjustTitle: "Lançar o valor real",
+    editTitle: "Editar lançamento",
+    logIt: "Lançar",
+    replacesAutomatic: (title, month) =>
+      `Substitui o lançamento automático "${title}" de ${inlineMonthYear(month)}.`,
+    form: {
+      optional: "Opcional",
+      installments: "Parcelas",
+      pickDate: "Escolha a data.",
+      typeAmount: "Digite o valor.",
+      pickCard: "Escolha o cartão em que foi cobrado.",
+      hints: {
+        installments: (count, amount, month, card) =>
+          `${count}× de cerca de ${amount}, a partir da fatura de ${inlineMonthYear(month)}${card ? ` do ${card}` : ""}.`,
+        credit: (month, card) =>
+          `Cai na fatura de ${inlineMonthYear(month)}${card ? ` do ${card}` : ""} — sai da sua conta quando essa fatura for paga.`,
+        income: "Conta como entrada nesse dia.",
+        savings: "Leva dinheiro para o guardado. Use um valor negativo para dinheiro tirado de volta.",
+        spending: "Sai da sua conta nesse dia. Valores negativos são estornos.",
+      },
+    },
+    ledger: {
+      cardBill: "Fatura",
+      cardBillOf: (card) => (card ? `Fatura do ${card}` : "Fatura do cartão"),
+      paysStatement: (month) => `Paga a fatura de ${inlineMonthYear(month)}`,
+      expected: "Previsto — se repete todo mês",
+      postedAutomatically: "Lançado automaticamente todo mês",
+      recurringValue: "Valor deste mês de um recorrente",
+      installments: (count) => `em ${count}×`,
+      onStatement: (month) => `na fatura de ${inlineMonthYear(month)}`,
+      automatic: "Automático",
+      logActual: "Lançar valor real",
     },
   },
 

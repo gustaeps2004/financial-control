@@ -116,6 +116,7 @@ export const en = {
     addFailed: "Couldn't add category. Please try again.",
     changeFailed: "Couldn't change that category. Please try again.",
     removeFailed: "Couldn't remove category. Please try again.",
+    removed: "(removed)",
   },
 
   cards: {
@@ -248,6 +249,50 @@ export const en = {
       happened: "Happened",
       projection: "Projection",
       selected: "Selected month",
+    },
+  },
+
+  transactions: {
+    title: "Transactions",
+    summary: (count: number, moneyIn: string, spent: string) =>
+      `${count} ${count === 1 ? "entry" : "entries"} · ${moneyIn} in · ${spent} spent`,
+    allCategories: "All categories",
+    logTitle: "Log a transaction",
+    deleteFailed: (title: string) => `Couldn't delete "${title}".`,
+    loadFailed: (month: string) => `Couldn't load ${monthYear(month)}.`,
+    empty: (month: string) => `Nothing in ${monthYear(month)} yet. Log the first one above.`,
+    adjustTitle: "Log the actual value",
+    editTitle: "Edit transaction",
+    logIt: "Log it",
+    replacesAutomatic: (title: string, month: string) =>
+      `Replaces the automatic "${title}" of ${monthYear(month)}.`,
+    form: {
+      optional: "Optional",
+      installments: "Installments",
+      pickDate: "Pick the date.",
+      typeAmount: "Type the amount.",
+      pickCard: "Pick the card it was charged to.",
+      hints: {
+        installments: (count: number, amount: string, month: string, card?: string) =>
+          `${count}× of about ${amount}, starting on the ${monthYear(month)} statement${card ? ` of ${card}` : ""}.`,
+        credit: (month: string, card?: string) =>
+          `Lands on the ${monthYear(month)} statement${card ? ` of ${card}` : ""} — it leaves your account when that bill is paid.`,
+        income: "Counts as money in on that day.",
+        savings: "Moves money into savings. Use a negative amount for money taken back out.",
+        spending: "Leaves your account on that day. Negative amounts are refunds.",
+      },
+    },
+    ledger: {
+      cardBill: "Card bill",
+      cardBillOf: (card: string | null) => (card ? `${card} bill` : "Card bill"),
+      paysStatement: (month: string) => `Pays the ${monthYear(month)} statement`,
+      expected: "Expected — repeats every month",
+      postedAutomatically: "Posted automatically every month",
+      recurringValue: "This month's value of a recurring item",
+      installments: (count: number) => `${count}× installments`,
+      onStatement: (month: string) => `on the ${monthYear(month)} statement`,
+      automatic: "Automatic",
+      logActual: "Log actual",
     },
   },
 

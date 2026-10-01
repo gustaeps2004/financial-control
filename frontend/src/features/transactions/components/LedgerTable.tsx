@@ -20,14 +20,16 @@ const iconButtonClasses =
   "inline-grid size-7 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-neutral-500 hover:bg-ink/7 hover:text-ink";
 
 function CategoryTag({ entry }: { entry: LedgerEntry }) {
-  if (entry.source === "CARD_PAYMENT") return <Tag variant="outline">Card bill</Tag>;
+  const { t } = useI18n();
+
+  if (entry.source === "CARD_PAYMENT") return <Tag variant="outline">{t.transactions.ledger.cardBill}</Tag>;
   if (!entry.category) return null;
   const variant =
     entry.kind === "INCOME" ? "accent" : entry.kind === "SAVINGS" ? "accent-2" : "neutral";
   return (
     <Tag variant={variant}>
       {entry.category.name}
-      {entry.category.deleted && " (removed)"}
+      {entry.category.deleted && ` ${t.categories.removed}`}
     </Tag>
   );
 }
@@ -45,27 +47,28 @@ export function LedgerTable({ entries, emptyMessage, onEdit, onAdjust, onRemove 
     <div className="overflow-x-auto">
       <Table>
         <TableHead>
-          <Th className="w-14">Date</Th>
-          <Th>Description</Th>
-          <Th>Category</Th>
-          <Th>Paid with</Th>
-          <Th className="text-right">Amount</Th>
+          <Th className="w-14">{t.fields.date}</Th>
+          <Th>{t.fields.description}</Th>
+          <Th>{t.fields.category}</Th>
+          <Th>{t.fields.paidWith}</Th>
+          <Th className="text-right">{t.fields.amount}</Th>
           {hasActions && <Th className="w-px" />}
         </TableHead>
         <TableBody>
           {entries.map((entry) => {
             const amount = signedAmount(entry);
-            const detail = entryDetail(entry);
+            const title = entryTitle(entry, t);
+            const detail = entryDetail(entry, t);
             return (
               <TableRow key={entry.key} className={cn(entry.projected && "opacity-65")}>
                 <Td className="text-[12.5px] tabular-nums text-ink/55">{formatDayMonth(entry.date)}</Td>
                 <Td>
                   <div className="flex flex-col">
                     <span className="flex items-center gap-1.5">
-                      {entryTitle(entry)}
+                      {title}
                       {entry.source === "RECURRING" && (
                         <span className="rounded border border-accent/50 px-1.5 text-[10px] leading-4 text-accent">
-                          {entry.projected ? "Projection" : "Automatic"}
+                          {entry.projected ? t.common.projection : t.transactions.ledger.automatic}
                         </span>
                       )}
                     </span>
@@ -89,7 +92,7 @@ export function LedgerTable({ entries, emptyMessage, onEdit, onAdjust, onRemove 
                     {entry.source === "TRANSACTION" && onEdit && (
                       <button
                         type="button"
-                        aria-label={`Edit ${entryTitle(entry)}`}
+                        aria-label={t.common.edit(title)}
                         className={iconButtonClasses}
                         onClick={() => onEdit(entry)}
                       >
@@ -102,13 +105,13 @@ export function LedgerTable({ entries, emptyMessage, onEdit, onAdjust, onRemove 
                         className="cursor-pointer rounded-md border-0 bg-transparent px-2 py-1 text-[12px] text-accent hover:bg-accent/10"
                         onClick={() => onAdjust(entry)}
                       >
-                        Log actual
+                        {t.transactions.ledger.logActual}
                       </button>
                     )}
                     {entry.source !== "RECURRING" && onRemove && (
                       <button
                         type="button"
-                        aria-label={`Delete ${entryTitle(entry)}`}
+                        aria-label={t.common.delete(title)}
                         className={iconButtonClasses}
                         onClick={() => onRemove(entry)}
                       >

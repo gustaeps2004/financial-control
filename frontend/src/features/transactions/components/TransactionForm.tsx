@@ -3,11 +3,12 @@ import { Field } from "@/shared/ui/Field";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Button } from "@/shared/ui/Button";
-import { formatYearMonth, todayIso } from "@/shared/lib/dates";
+import { todayIso } from "@/shared/lib/dates";
 import { formatMoney, parseMoneyInput } from "@/shared/lib/money";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/shared/lib/payment-methods";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
 import { useI18n } from "@/lib/i18n/i18n-context";
+import type { Messages } from "@/lib/i18n/messages/en";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
 import { CATEGORY_KINDS, acceptsCreditCard, type Category } from "@/features/categories/types";
 import { useCards } from "@/features/cards/context/CardsContext";
@@ -98,10 +99,10 @@ export function TransactionForm({
     event.preventDefault();
     const amount = parseMoneyInput(values.amount);
 
-    if (!categoryId) return setError("Pick a category first — add one in Settings.");
-    if (!values.date) return setError("Pick the date.");
-    if (!amount) return setError("Type the amount.");
-    if (isCredit && !cardId) return setError("Pick the card it was charged to.");
+    if (!categoryId) return setError(t.common.pickCategoryFirst);
+    if (!values.date) return setError(t.transactions.form.pickDate);
+    if (!amount) return setError(t.transactions.form.typeAmount);
+    if (isCredit && !cardId) return setError(t.transactions.form.pickCard);
 
     setError(null);
     setIsSubmitting(true);
@@ -120,20 +121,23 @@ export function TransactionForm({
         setValues((previous) => ({ ...previous, description: "", amount: "", installments: "1" }));
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't save. Please try again.");
+      setError(errorMessage(err, t, t.common.saveFailed));
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  const hint = describe({
-    kind: category?.kind,
-    isCredit,
-    cardName: card?.nick,
-    statementMonth: card && isCredit ? statementMonthFor(card, values.date) : null,
-    installments,
-    amount: parseMoneyInput(values.amount),
-  });
+  const hint = describe(
+    {
+      kind: category?.kind,
+      isCredit,
+      cardName: card?.nick,
+      statementMonth: card && isCredit ? statementMonthFor(card, values.date) : null,
+      installments,
+      amount: parseMoneyInput(values.amount),
+    },
+    t,
+  );
 
   const categoryIsListed = categories.some((c) => c.id === categoryId);
   const cardIsListed = cards.some((c) => c.id === cardId);
@@ -141,7 +145,7 @@ export function TransactionForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end gap-2">
-        <Field label="Date" htmlFor="txn-date" className="flex-[0_1_150px]">
+        <Field label={t.fields.date} htmlFor="txn-date" className="flex-[0_1_150px]">
           <Input
             id="txn-date"
             type="date"
@@ -150,23 +154,25 @@ export function TransactionForm({
             onChange={(e) => update("date", e.target.value)}
           />
         </Field>
-        <Field label="Description" htmlFor="txn-description" className="min-w-0 flex-[2_1_160px]">
+        <Field label={t.fields.description} htmlFor="txn-description" className="min-w-0 flex-[2_1_160px]">
           <Input
             id="txn-description"
-            placeholder="Optional"
+            placeholder={t.transactions.form.optional}
             maxLength={140}
             value={values.description}
             onChange={(e) => update("description", e.target.value)}
           />
         </Field>
-        <Field label="Category" htmlFor="txn-category" className="min-w-0 flex-[1_1_150px]">
+        <Field label={t.fields.category} htmlFor="txn-category" className="min-w-0 flex-[1_1_150px]">
           <Select
             id="txn-category"
             value={categoryId}
             onChange={(e) => update("categoryId", e.target.value)}
           >
             {!categoryIsListed && knownCategory && (
-              <option value={knownCategory.id}>{knownCategory.name} (removed)</option>
+              <option value={knownCategory.id}>
+                {knownCategory.name} {t.categories.removed}
+              </option>
             )}
             {CATEGORY_KINDS.map((kind) => {
               const ofKind = categories.filter((c) => c.kind === kind);
@@ -183,7 +189,7 @@ export function TransactionForm({
             })}
           </Select>
         </Field>
-        <Field label="Amount" htmlFor="txn-amount" className="flex-[0_1_120px]">
+        <Field label={t.fields.amount} htmlFor="txn-amount" className="flex-[0_1_120px]">
           <Input
             id="txn-amount"
             inputMode="decimal"
@@ -193,13 +199,13 @@ export function TransactionForm({
             onChange={(e) => update("amount", e.target.value)}
           />
         </Field>
-        <Field label="Paid with" htmlFor="txn-method" className="min-w-0 flex-[1_1_140px]">
+        <Field label={t.fields.paidWith} htmlFor="txn-method" className="min-w-0 flex-[1_1_140px]">
           <Select
             id="txn-method"
             value={paymentMethod}
             onChange={(e) => update("paymentMethod", e.target.value as PaymentMethod | "")}
           >
-            <option value="">Not informed</option>
+            <option value="">{t.common.notInformed}</option>
             {PAYMENT_METHODS.map((method) => (
               <option key={method} value={method} disabled={method === "CREDIT" && !creditAllowed}>
                 {t.paymentMethods[method]}
@@ -208,14 +214,16 @@ export function TransactionForm({
           </Select>
         </Field>
         <Field
-          label={isCredit ? "Card" : "Account"}
+          label={isCredit ? t.fields.card : t.fields.account}
           htmlFor="txn-card"
           className="min-w-0 flex-[1_1_140px]"
         >
           <Select id="txn-card" value={cardId} onChange={(e) => update("cardId", e.target.value)}>
             {!isCredit && <option value="">—</option>}
             {!cardIsListed && knownCard && cardId === knownCard.id && (
-              <option value={knownCard.id}>{knownCard.nickname} (removed)</option>
+              <option value={knownCard.id}>
+                {knownCard.nickname} {t.cards.removed}
+              </option>
             )}
             {cards.map((c) => (
               <option key={c.id} value={c.id}>
@@ -225,7 +233,7 @@ export function TransactionForm({
           </Select>
         </Field>
         {isCredit && (
-          <Field label="Installments" htmlFor="txn-installments" className="flex-[0_1_96px]">
+          <Field label={t.transactions.form.installments} htmlFor="txn-installments" className="flex-[0_1_96px]">
             <Input
               id="txn-installments"
               type="number"
@@ -238,11 +246,11 @@ export function TransactionForm({
         )}
         <div className="flex flex-none gap-1.5">
           <Button type="submit" variant="primary" disabled={isSubmitting}>
-            {isSubmitting ? "Saving…" : submitLabel}
+            {isSubmitting ? t.common.saving : submitLabel}
           </Button>
           {onCancel && (
             <Button variant="secondary" onClick={onCancel}>
-              Cancel
+              {t.common.cancel}
             </Button>
           )}
         </div>
@@ -258,35 +266,38 @@ export function TransactionForm({
   );
 }
 
-function describe({
-  kind,
-  isCredit,
-  cardName,
-  statementMonth,
-  installments,
-  amount,
-}: {
-  kind?: Category["kind"];
-  isCredit: boolean;
-  cardName?: string;
-  statementMonth: string | null;
-  installments: number;
-  amount: number;
-}): string {
+function describe(
+  {
+    kind,
+    isCredit,
+    cardName,
+    statementMonth,
+    installments,
+    amount,
+  }: {
+    kind?: Category["kind"];
+    isCredit: boolean;
+    cardName?: string;
+    statementMonth: string | null;
+    installments: number;
+    amount: number;
+  },
+  t: Messages,
+): string {
+  const hints = t.transactions.form.hints;
   if (isCredit && statementMonth) {
-    const statement = `the ${formatYearMonth(statementMonth)} statement${cardName ? ` of ${cardName}` : ""}`;
     return installments > 1 && amount > 0
-      ? `${installments}× of about ${formatMoney(amount / installments)}, starting on ${statement}.`
-      : `Lands on ${statement} — it leaves your account when that bill is paid.`;
+      ? hints.installments(installments, formatMoney(amount / installments), statementMonth, cardName)
+      : hints.credit(statementMonth, cardName);
   }
   switch (kind) {
     case "INCOME":
-      return "Counts as money in on that day.";
+      return hints.income;
     case "SAVINGS":
-      return "Moves money into savings. Use a negative amount for money taken back out.";
+      return hints.savings;
     case "FIXED_BILL":
     case "EXPENSE":
-      return "Leaves your account on that day. Negative amounts are refunds.";
+      return hints.spending;
     default:
       return "";
   }
