@@ -6,11 +6,13 @@ import type { StringValue } from 'ms';
 import { SharedModule } from '../../shared/shared.module';
 import { SessionsService } from './application/sessions.service';
 import { UsersService } from './application/users.service';
+import { GoogleIdentityVerifier } from './domain/ports/google-identity-verifier';
 import { PasswordHasher } from './domain/ports/password-hasher';
 import { TokenGenerator } from './domain/ports/token-generator';
 import { SessionsRepository } from './domain/repositories/sessions.repository';
 import { UsersRepository } from './domain/repositories/users.repository';
 import { Argon2PasswordHasher } from './infrastructure/security/argon2-password-hasher';
+import { GoogleAuthLibraryIdentityVerifier } from './infrastructure/security/google-auth-library-identity-verifier';
 import { JwtTokenGenerator } from './infrastructure/security/jwt-token-generator';
 import { UserEntity } from './infrastructure/persistence/entities/user.entity';
 import { UserSessionEntity } from './infrastructure/persistence/entities/user-session.entity';
@@ -47,6 +49,10 @@ const jwtModule = JwtModule.registerAsync({
     { provide: SessionsRepository, useClass: TypeOrmSessionsRepository },
     { provide: PasswordHasher, useClass: Argon2PasswordHasher },
     { provide: TokenGenerator, useClass: JwtTokenGenerator },
+    {
+      provide: GoogleIdentityVerifier,
+      useClass: GoogleAuthLibraryIdentityVerifier,
+    },
     JwtAuthGuard,
   ],
   exports: [UsersService, SessionsService, JwtAuthGuard, jwtModule],
