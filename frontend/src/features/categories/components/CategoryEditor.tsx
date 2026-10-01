@@ -3,15 +3,10 @@ import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Button } from "@/shared/ui/Button";
 import { cn } from "@/shared/lib/cn";
-import { ApiError } from "@/lib/http/api-error";
+import { errorMessage } from "@/lib/i18n/error-message";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCategories } from "../context/CategoriesContext";
-import {
-  CATEGORY_KINDS,
-  CATEGORY_KIND_HINTS,
-  CATEGORY_KIND_LABELS,
-  type Category,
-  type CategoryKind,
-} from "../types";
+import { CATEGORY_KINDS, type Category, type CategoryKind } from "../types";
 
 type ChipTone = "surface" | "track";
 
@@ -24,10 +19,6 @@ const toneClasses: Record<ChipTone, string> = {
   surface: "bg-surface text-[13px]",
   track: "bg-track text-[12.5px]",
 };
-
-function errorMessage(err: unknown, fallback: string): string {
-  return err instanceof ApiError ? err.message : fallback;
-}
 
 interface CategoryChipProps {
   category: Category;
@@ -48,6 +39,8 @@ function CategoryChip({
   onChangeKind,
   onRemove,
 }: CategoryChipProps) {
+  const { t } = useI18n();
+
   if (isEditing) {
     return (
       <span
@@ -58,14 +51,14 @@ function CategoryChip({
       >
         {category.name}
         <select
-          aria-label={`Kind of ${category.name}`}
+          aria-label={t.categories.kindOf(category.name)}
           value={category.kind}
           onChange={(e) => onChangeKind(e.target.value as CategoryKind)}
           className="cursor-pointer rounded border border-divider bg-canvas px-1 py-0.5 text-[12px] text-ink"
         >
           {CATEGORY_KINDS.map((kind) => (
             <option key={kind} value={kind}>
-              {CATEGORY_KIND_LABELS[kind]}
+              {t.categories.kinds[kind]}
             </option>
           ))}
         </select>
@@ -74,7 +67,7 @@ function CategoryChip({
           onClick={onDone}
           className="cursor-pointer rounded border-0 bg-transparent px-1 text-[12px] text-accent"
         >
-          Done
+          {t.categories.done}
         </button>
       </span>
     );
@@ -87,7 +80,7 @@ function CategoryChip({
       <button
         type="button"
         onClick={onEdit}
-        title="Change kind"
+        title={t.categories.changeKind}
         className="cursor-pointer border-0 bg-transparent p-0 text-inherit hover:text-accent-300"
       >
         {category.name}
@@ -95,7 +88,7 @@ function CategoryChip({
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`Remove ${category.name}`}
+        aria-label={t.common.remove(category.name)}
         className="cursor-pointer rounded border-0 bg-transparent px-[3px] text-[14px] leading-none text-neutral-600 hover:text-accent-300"
       >
         ×
@@ -104,8 +97,9 @@ function CategoryChip({
   );
 }
 
-export function CategoryEditor({ tone = "track", placeholder = "New category" }: CategoryEditorProps) {
+export function CategoryEditor({ tone = "track", placeholder }: CategoryEditorProps) {
   const { categories, addCategory, updateCategory, removeCategory } = useCategories();
+  const { t } = useI18n();
   const [draft, setDraft] = useState("");
   const [draftKind, setDraftKind] = useState<CategoryKind>("EXPENSE");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -118,7 +112,7 @@ export function CategoryEditor({ tone = "track", placeholder = "New category" }:
       await addCategory(draft, draftKind);
       setDraft("");
     } catch (err) {
-      setError(errorMessage(err, "Couldn't add category. Please try again."));
+      setError(errorMessage(err, t, t.categories.addFailed));
     }
   }
 
@@ -127,7 +121,7 @@ export function CategoryEditor({ tone = "track", placeholder = "New category" }:
       setError(null);
       await updateCategory(id, { kind });
     } catch (err) {
-      setError(errorMessage(err, "Couldn't change that category. Please try again."));
+      setError(errorMessage(err, t, t.categories.changeFailed));
     }
   }
 
@@ -136,7 +130,7 @@ export function CategoryEditor({ tone = "track", placeholder = "New category" }:
       setError(null);
       await removeCategory(id);
     } catch (err) {
-      setError(errorMessage(err, "Couldn't remove category. Please try again."));
+      setError(errorMessage(err, t, t.categories.removeFailed));
     }
   }
 
@@ -152,11 +146,11 @@ export function CategoryEditor({ tone = "track", placeholder = "New category" }:
       {CATEGORY_KINDS.map((kind) => {
         const ofKind = categories.filter((category) => category.kind === kind);
         return (
-          <section key={kind} aria-label={CATEGORY_KIND_LABELS[kind]} className="flex flex-col gap-1.5">
-            <h6 className="m-0 text-[12px] font-medium text-ink/75">{CATEGORY_KIND_LABELS[kind]}</h6>
+          <section key={kind} aria-label={t.categories.kinds[kind]} className="flex flex-col gap-1.5">
+            <h6 className="m-0 text-[12px] font-medium text-ink/75">{t.categories.kinds[kind]}</h6>
             <div className="flex flex-wrap gap-1.5">
               {ofKind.length === 0 && (
-                <span className="text-[12px] text-ink/40">{CATEGORY_KIND_HINTS[kind]}</span>
+                <span className="text-[12px] text-ink/40">{t.categories.kindHints[kind]}</span>
               )}
               {ofKind.map((category) => (
                 <CategoryChip
@@ -177,27 +171,27 @@ export function CategoryEditor({ tone = "track", placeholder = "New category" }:
 
       <div className="flex flex-wrap gap-1.5">
         <Input
-          aria-label="Category name"
-          placeholder={placeholder}
+          aria-label={t.categories.nameLabel}
+          placeholder={placeholder ?? t.categories.newPlaceholder}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={handleKeyDown}
           className="min-w-0 flex-[2_1_140px]"
         />
         <Select
-          aria-label="Category kind"
+          aria-label={t.categories.kindLabel}
           value={draftKind}
           onChange={(e) => setDraftKind(e.target.value as CategoryKind)}
           className="w-auto flex-[1_1_120px]"
         >
           {CATEGORY_KINDS.map((kind) => (
             <option key={kind} value={kind}>
-              {CATEGORY_KIND_LABELS[kind]}
+              {t.categories.kinds[kind]}
             </option>
           ))}
         </Select>
         <Button variant="secondary" className="flex-none" onClick={() => void commit()}>
-          Add
+          {t.common.add}
         </Button>
       </div>
       {error && <p className="m-0 text-[12px] text-accent-300">{error}</p>}

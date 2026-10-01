@@ -4,7 +4,7 @@ import { Tag } from "@/shared/ui/Tag";
 import { cn } from "@/shared/lib/cn";
 import { currentYearMonth, formatYearMonth } from "@/shared/lib/dates";
 import { formatMoney } from "@/shared/lib/money";
-import { PAYMENT_METHOD_LABELS } from "@/shared/lib/payment-methods";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
 import { useCards } from "@/features/cards/context/CardsContext";
 import type { RecurringTransaction } from "../types";
@@ -37,6 +37,7 @@ function periodLabel(item: RecurringTransaction): string {
 export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemove }: RecurringTableProps) {
   const { categories } = useCategories();
   const { cards } = useCards();
+  const { t } = useI18n();
   const thisMonth = currentYearMonth();
 
   if (recurring.length === 0) {
@@ -63,7 +64,7 @@ export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemov
             const category = categories.find((c) => c.id === item.categoryId);
             const card = cards.find((c) => c.id === item.cardId);
             const paidWith = [
-              item.paymentMethod ? PAYMENT_METHOD_LABELS[item.paymentMethod] : null,
+              item.paymentMethod ? t.paymentMethods[item.paymentMethod] : null,
               card?.nick,
             ]
               .filter(Boolean)

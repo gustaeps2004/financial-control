@@ -77,6 +77,38 @@ export const ptBR: Messages = {
     signOut: "Sair",
   },
 
+  paymentMethods: {
+    CREDIT: "Cartão de crédito",
+    PIX: "Pix",
+    DEBIT: "Débito",
+    CASH: "Dinheiro",
+    BANK_TRANSFER: "Boleto / transferência",
+  },
+
+  categories: {
+    kinds: {
+      INCOME: "Entradas",
+      FIXED_BILL: "Contas fixas",
+      EXPENSE: "Dia a dia",
+      SAVINGS: "Guardado",
+    },
+    kindHints: {
+      INCOME: "Salário, freelas, coisas que você vendeu",
+      FIXED_BILL: "A mesma conta todo mês: aluguel, internet, financiamento",
+      EXPENSE: "Mercado, combustível, comer fora",
+      SAVINGS: "Dinheiro guardado — negativo quando você tira de volta",
+    },
+    newPlaceholder: "Nova categoria",
+    nameLabel: "Nome da categoria",
+    kindLabel: "Tipo da categoria",
+    kindOf: (name) => `Tipo de ${name}`,
+    changeKind: "Mudar o tipo",
+    done: "Pronto",
+    addFailed: "Não foi possível adicionar a categoria. Tente de novo.",
+    changeFailed: "Não foi possível alterar essa categoria. Tente de novo.",
+    removeFailed: "Não foi possível remover a categoria. Tente de novo.",
+  },
+
   controls: {
     previousMonth: "Mês anterior",
     nextMonth: "Próximo mês",

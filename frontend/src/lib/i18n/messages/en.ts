@@ -84,6 +84,40 @@ export const en = {
     signOut: "Sign out",
   },
 
+  paymentMethods: {
+    CREDIT: "Credit card",
+    PIX: "Pix",
+    DEBIT: "Debit",
+    CASH: "Cash",
+    BANK_TRANSFER: "Boleto / transfer",
+  },
+
+  categories: {
+    // In the order the month is read: what comes in, what is committed,
+    // what gets spent, what is put aside.
+    kinds: {
+      INCOME: "Money in",
+      FIXED_BILL: "Fixed bills",
+      EXPENSE: "Day-to-day",
+      SAVINGS: "Savings",
+    },
+    kindHints: {
+      INCOME: "Salary, freelance work, things you sold",
+      FIXED_BILL: "The same bill every month: rent, internet, financing",
+      EXPENSE: "Groceries, fuel, eating out",
+      SAVINGS: "Money put aside — negative when you take some back",
+    },
+    newPlaceholder: "New category",
+    nameLabel: "Category name",
+    kindLabel: "Category kind",
+    kindOf: (name: string) => `Kind of ${name}`,
+    changeKind: "Change kind",
+    done: "Done",
+    addFailed: "Couldn't add category. Please try again.",
+    changeFailed: "Couldn't change that category. Please try again.",
+    removeFailed: "Couldn't remove category. Please try again.",
+  },
+
   controls: {
     previousMonth: "Previous month",
     nextMonth: "Next month",

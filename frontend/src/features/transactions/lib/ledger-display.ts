@@ -1,5 +1,5 @@
 import { formatYearMonth } from "@/shared/lib/dates";
-import { PAYMENT_METHOD_LABELS } from "@/shared/lib/payment-methods";
+import type { Messages } from "@/lib/i18n/messages/en";
 import type { LedgerEntry } from "@/features/reports/types";
 
 /**
@@ -32,8 +32,8 @@ export function entryDetail(entry: LedgerEntry): string | null {
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
-export function paidWithLabel(entry: LedgerEntry): string {
+export function paidWithLabel(entry: LedgerEntry, t: Messages): string {
   if (entry.source === "CARD_PAYMENT") return "Card bill";
-  const method = entry.paymentMethod ? PAYMENT_METHOD_LABELS[entry.paymentMethod] : null;
+  const method = entry.paymentMethod ? t.paymentMethods[entry.paymentMethod] : null;
   return [method, entry.card?.nickname].filter(Boolean).join(" · ") || "—";
 }

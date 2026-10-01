@@ -6,19 +6,11 @@ import { Button } from "@/shared/ui/Button";
 import { MonthInput } from "@/shared/ui/MonthInput";
 import { currentYearMonth, formatYearMonth, todayIso } from "@/shared/lib/dates";
 import { parseMoneyInput } from "@/shared/lib/money";
-import {
-  PAYMENT_METHODS,
-  PAYMENT_METHOD_LABELS,
-  type PaymentMethod,
-} from "@/shared/lib/payment-methods";
+import { PAYMENT_METHODS, type PaymentMethod } from "@/shared/lib/payment-methods";
 import { ApiError } from "@/lib/http/api-error";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
-import {
-  CATEGORY_KINDS,
-  CATEGORY_KIND_LABELS,
-  acceptsCreditCard,
-  type Category,
-} from "@/features/categories/types";
+import { CATEGORY_KINDS, acceptsCreditCard, type Category } from "@/features/categories/types";
 import { useCards } from "@/features/cards/context/CardsContext";
 import type { RecurringTransactionInput } from "../types";
 
@@ -69,6 +61,7 @@ export function RecurringForm({
 }: RecurringFormProps) {
   const { categories } = useCategories();
   const { cards } = useCards();
+  const { t } = useI18n();
   const [values, setValues] = useState<RecurringFormValues>(() => ({
     ...emptyValues(),
     ...initial,
@@ -150,7 +143,7 @@ export function RecurringForm({
               const ofKind = categories.filter((c) => c.kind === kind);
               if (ofKind.length === 0) return null;
               return (
-                <optgroup key={kind} label={CATEGORY_KIND_LABELS[kind]}>
+                <optgroup key={kind} label={t.categories.kinds[kind]}>
                   {ofKind.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -208,7 +201,7 @@ export function RecurringForm({
             <option value="">Not informed</option>
             {PAYMENT_METHODS.map((method) => (
               <option key={method} value={method} disabled={method === "CREDIT" && !creditAllowed}>
-                {PAYMENT_METHOD_LABELS[method]}
+                {t.paymentMethods[method]}
               </option>
             ))}
           </Select>

@@ -7,6 +7,7 @@ import { cn } from "@/shared/lib/cn";
 import { currentYearMonth, formatYearMonth, parseYearMonth } from "@/shared/lib/dates";
 import { formatMoney, formatMoneyWithMinus, formatPercent } from "@/shared/lib/money";
 import { paymentMethodLabel } from "@/shared/lib/payment-methods";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useAnnual, useSummary } from "@/features/reports/hooks/use-reports";
 import type { SummaryPeriod, SummaryView } from "@/features/reports/types";
 import { BreakdownTable } from "../components/BreakdownTable";
@@ -186,6 +187,7 @@ function KpiRow({ data, mode }: { data: SummaryView; mode: PeriodMode }) {
 }
 
 function Breakdowns({ data }: { data: SummaryView }) {
+  const { t } = useI18n();
   const income = data.cashFlow.income;
   const fixedBillsTotal = data.fixedBills.reduce((sum, line) => sum + line.total, 0);
 
@@ -241,7 +243,7 @@ function Breakdowns({ data }: { data: SummaryView }) {
           rowKey={(line) => line.paymentMethod ?? "none"}
           emptyMessage="No day-to-day spending in this period."
           columns={[
-            { header: "Method", render: (line) => paymentMethodLabel(line.paymentMethod) },
+            { header: "Method", render: (line) => paymentMethodLabel(line.paymentMethod, t) },
             { header: "Amount", align: "right", render: (line) => formatMoneyWithMinus(line.total) },
             { header: "Of money in", align: "right", render: (line) => share(line.share) },
           ]}
