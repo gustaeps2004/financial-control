@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../domain/entities/user.entity';
+import { AuthProvider } from '../../domain/enums/auth-provider.enum';
 import { UsersRepository } from '../../domain/repositories/users.repository';
 import { UserEntity } from './entities/user.entity';
 import { UserMapper } from './mappers/user.mapper';
@@ -22,6 +23,16 @@ export class TypeOrmUsersRepository extends UsersRepository {
 
   async findByUsername(username: string): Promise<User | null> {
     const entity = await this.repository.findOne({ where: { username } });
+    return entity ? UserMapper.toDomain(entity) : null;
+  }
+
+  async findByProviderId(
+    provider: AuthProvider,
+    providerId: string,
+  ): Promise<User | null> {
+    const entity = await this.repository.findOne({
+      where: { provider, providerId },
+    });
     return entity ? UserMapper.toDomain(entity) : null;
   }
 
