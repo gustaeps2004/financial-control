@@ -454,6 +454,10 @@ export const en = {
         "Deleting your account erases every transaction, card, category, recurring item and statement you recorded.",
       cannotUndo: "This cannot be undone.",
       confirmLabel: "Type your password to confirm",
+      // For whoever signed in with Google.
+      confirmWithGoogle: "To confirm, continue with the Google account you signed in with.",
+      confirmedAs: (email: string | null) =>
+        email ? `Confirmed as ${email}.` : "Google account confirmed.",
       deleting: "Deleting…",
       deleteEverything: "Delete everything",
       deleteAccount: "Delete account",

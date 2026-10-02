@@ -449,6 +449,8 @@ export const ptBR: Messages = {
         "Excluir sua conta apaga todos os lançamentos, cartões, categorias, recorrentes e faturas que você registrou.",
       cannotUndo: "Isso não pode ser desfeito.",
       confirmLabel: "Digite sua senha para confirmar",
+      confirmWithGoogle: "Para confirmar, continue com a conta Google com que você entrou.",
+      confirmedAs: (email) => (email ? `Confirmado como ${email}.` : "Conta Google confirmada."),
       deleting: "Excluindo…",
       deleteEverything: "Excluir tudo",
       deleteAccount: "Excluir conta",

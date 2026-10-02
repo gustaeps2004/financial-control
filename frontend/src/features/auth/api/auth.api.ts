@@ -1,5 +1,6 @@
 import { apiClient, withAuth } from "@/lib/http/api-client";
 import type {
+  AccountConfirmation,
   GoogleLoginRequest,
   GoogleLoginResponse,
   LoginRequest,
@@ -23,6 +24,6 @@ export const authApi = {
       { name },
       withAuth(token),
     ),
-  deleteAccount: (password: string, token: string) =>
-    apiClient.delete("/users/me", { ...withAuth(token), body: JSON.stringify({ password }) }),
+  deleteAccount: (confirmation: AccountConfirmation, token: string) =>
+    apiClient.delete("/users/me", { ...withAuth(token), body: JSON.stringify(confirmation) }),
 };

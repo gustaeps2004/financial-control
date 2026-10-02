@@ -8,7 +8,7 @@ import {
   saveDisplayName,
   saveSession,
 } from "../lib/session-storage";
-import type { Session } from "../types";
+import type { AccountConfirmation, Session } from "../types";
 
 interface GoogleSignInOptions {
   keepSignedIn: boolean;
@@ -30,7 +30,7 @@ interface AuthContextValue {
   ) => Promise<{ isNewUser: boolean }>;
   register: (email: string, password: string, name: string) => Promise<void>;
   updateName: (name: string) => Promise<void>;
-  deleteAccount: (password: string) => Promise<void>;
+  deleteAccount: (confirmation: AccountConfirmation) => Promise<void>;
   logout: () => void;
 }
 
@@ -126,9 +126,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
   };
 
-  const deleteAccount = async (password: string) => {
+  const deleteAccount = async (confirmation: AccountConfirmation) => {
     if (!session) return;
-    await authApi.deleteAccount(password, session.token);
+    await authApi.deleteAccount(confirmation, session.token);
     forgetAccount(session.email);
     logout();
   };

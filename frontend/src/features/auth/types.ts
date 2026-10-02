@@ -54,3 +54,6 @@ export interface Session {
   // Missing from sessions saved before Google sign-in: those used a password.
   signInMethod?: SignInMethod;
 }
+
+/** What proves it's the account's owner: the password, or Google for Google sign-ins. */
+export type AccountConfirmation = { password: string } | { googleCredential: string };
