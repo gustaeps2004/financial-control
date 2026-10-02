@@ -1,5 +1,7 @@
 import { apiClient, withAuth } from "@/lib/http/api-client";
 import type {
+  GoogleLoginRequest,
+  GoogleLoginResponse,
   LoginRequest,
   LoginResponse,
   RegisterRequest,
@@ -11,6 +13,8 @@ import type {
 export const authApi = {
   login: (payload: LoginRequest) =>
     apiClient.post<LoginResponse, LoginRequest>("/auth/login", payload),
+  loginWithGoogle: (payload: GoogleLoginRequest) =>
+    apiClient.post<GoogleLoginResponse, GoogleLoginRequest>("/auth/google", payload),
   register: (payload: RegisterRequest) =>
     apiClient.post<RegisterResponse, RegisterRequest>("/users", payload),
   updateName: (name: string, token: string) =>

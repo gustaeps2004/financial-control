@@ -490,6 +490,11 @@ export const en = {
       submitting: "Signing in…",
       createAccount: "Create an account",
       failed: "Couldn't sign in. Please try again.",
+      // Signing in with Google as an account that already has a password.
+      linkGoogle: (email: string) =>
+        `${email} already has an account with a password. Enter your password to connect Google — after that, Google alone signs you in.`,
+      link: "Connect and sign in",
+      linking: "Connecting…",
     },
     signup: {
       heroTitle: "Three fields,\nthen you're tracking.",
@@ -514,6 +519,11 @@ export const en = {
       good: "Good — a few more characters makes it stronger.",
       strong: "Strong password.",
     },
+    google: {
+      // Between the email-and-password form and the Google button.
+      or: "or",
+      unavailable: "Google sign-in couldn't load. Check your connection and reload the page.",
+    },
   },
 
   // Keyed by the `code` of the API's error responses.
@@ -526,6 +536,15 @@ export const en = {
     EMAIL_ALREADY_REGISTERED: "There's already an account with this email.",
     USERNAME_ALREADY_REGISTERED: "This username is already taken.",
     USER_NOT_FOUND: "This account no longer exists.",
+    GOOGLE_SIGN_IN_DISABLED: "Google sign-in isn't set up on the server.",
+    INVALID_GOOGLE_CREDENTIAL: "Google couldn't confirm it's you. Try again.",
+    GOOGLE_EMAIL_NOT_VERIFIED:
+      "Your Google account's email isn't verified yet. Verify it with Google, then try again.",
+    GOOGLE_ACCOUNT_NOT_REGISTERED:
+      "You haven't signed up with this Google account yet. Create an account to get started.",
+    GOOGLE_LINK_REQUIRES_PASSWORD:
+      "There's already an account with this email. Sign in with your password.",
+    GOOGLE_ACCOUNT_MISMATCH: "Use the same Google account you sign in with.",
     CATEGORY_ALREADY_EXISTS: "There's already a category with this name.",
     CATEGORY_NOT_FOUND: "This category no longer exists.",
     CARD_NOT_FOUND: "This card no longer exists.",

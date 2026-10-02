@@ -10,11 +10,24 @@ import {
 } from "../lib/session-storage";
 import type { Session } from "../types";
 
+interface GoogleSignInOptions {
+  keepSignedIn: boolean;
+  // Links Google to the password account that has the Google account's email.
+  password?: string;
+  // Lets the sign-in create the account, as signing up does.
+  acceptedTerms?: boolean;
+}
+
 interface AuthContextValue {
   session: Session | null;
   isAuthenticated: boolean;
   displayName: string;
   login: (email: string, password: string, keepSignedIn: boolean) => Promise<void>;
+  // Resolves to whether the sign-in created the account.
+  signInWithGoogle: (
+    credential: string,
+    options: GoogleSignInOptions,
+  ) => Promise<{ isNewUser: boolean }>;
   register: (email: string, password: string, name: string) => Promise<void>;
   updateName: (name: string) => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
@@ -39,12 +52,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(() => loadSession());
   const [displayName, setDisplayName] = useState<string>(() => resolveDisplayName(session));
 
-  const login = async (email: string, password: string, keepSignedIn: boolean) => {
-    const response = await authApi.login({ email, password });
-    const next: Session = { token: response.accessToken, expiresAt: response.expiresAt, email };
+  const startSession = (next: Session, keepSignedIn: boolean) => {
     saveSession(next, keepSignedIn);
     setSession(next);
     setDisplayName(resolveDisplayName(next));
+  };
+
+  const login = async (email: string, password: string, keepSignedIn: boolean) => {
+    const response = await authApi.login({ email, password });
+    startSession(
+      {
+        token: response.accessToken,
+        expiresAt: response.expiresAt,
+        email,
+        signInMethod: "password",
+      },
+      keepSignedIn,
+    );
+  };
+
+  const signInWithGoogle = async (
+    credential: string,
+    { keepSignedIn, password, acceptedTerms = false }: GoogleSignInOptions,
+  ) => {
+    const response = await authApi.loginWithGoogle({
+      credential,
+      password,
+      acceptedPrivacyPolicy: acceptedTerms,
+      acceptedTermsOfUse: acceptedTerms,
+    });
+    const { email, name } = response.user;
+    // Google brings the name along. An account linked without one keeps the
+    // name this device already knows.
+    if (name) {
+      saveDisplayName(email, name);
+    }
+    startSession(
+      {
+        token: response.accessToken,
+        expiresAt: response.expiresAt,
+        email,
+        signInMethod: "google",
+      },
+      keepSignedIn,
+    );
+    return { isNewUser: response.isNewUser };
   };
 
   const register = async (email: string, password: string, name: string) => {
@@ -86,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: session !== null,
     displayName,
     login,
+    signInWithGoogle,
     register,
     updateName,
     deleteAccount,

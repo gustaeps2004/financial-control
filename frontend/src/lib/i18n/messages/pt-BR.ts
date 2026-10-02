@@ -485,6 +485,10 @@ export const ptBR: Messages = {
       submitting: "Entrando…",
       createAccount: "Criar uma conta",
       failed: "Não foi possível entrar. Tente de novo.",
+      linkGoogle: (email) =>
+        `${email} já tem uma conta com senha. Digite sua senha para conectar o Google — depois disso, é só entrar com o Google.`,
+      link: "Conectar e entrar",
+      linking: "Conectando…",
     },
     signup: {
       heroTitle: "Três campos,\ne o controle é seu.",
@@ -509,6 +513,11 @@ export const ptBR: Messages = {
       good: "Boa — mais alguns caracteres a deixam mais forte.",
       strong: "Senha forte.",
     },
+    google: {
+      or: "ou",
+      unavailable:
+        "Não foi possível carregar o login com o Google. Verifique sua conexão e recarregue a página.",
+    },
   },
 
   apiErrors: {
@@ -520,6 +529,14 @@ export const ptBR: Messages = {
     EMAIL_ALREADY_REGISTERED: "Já existe uma conta com este e-mail.",
     USERNAME_ALREADY_REGISTERED: "Este nome de usuário já está em uso.",
     USER_NOT_FOUND: "Esta conta não existe mais.",
+    GOOGLE_SIGN_IN_DISABLED: "O login com o Google não está configurado no servidor.",
+    INVALID_GOOGLE_CREDENTIAL: "O Google não confirmou que é você. Tente de novo.",
+    GOOGLE_EMAIL_NOT_VERIFIED:
+      "O e-mail da sua conta Google ainda não foi verificado. Verifique-o no Google e tente de novo.",
+    GOOGLE_ACCOUNT_NOT_REGISTERED:
+      "Você ainda não se cadastrou com esta conta Google. Crie uma conta para começar.",
+    GOOGLE_LINK_REQUIRES_PASSWORD: "Já existe uma conta com este e-mail. Entre com sua senha.",
+    GOOGLE_ACCOUNT_MISMATCH: "Use a mesma conta Google com que você entra.",
     CATEGORY_ALREADY_EXISTS: "Já existe uma categoria com este nome.",
     CATEGORY_NOT_FOUND: "Esta categoria não existe mais.",
     CARD_NOT_FOUND: "Este cartão não existe mais.",
