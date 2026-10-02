@@ -6,14 +6,18 @@ import { Input } from "@/shared/ui/Input";
 import { PasswordInput } from "@/shared/ui/PasswordInput";
 import { Checkbox } from "@/shared/ui/Checkbox";
 import { cn } from "@/shared/lib/cn";
+import { ApiError } from "@/lib/http/api-error";
 import { errorMessage } from "@/lib/i18n/error-message";
 import { useI18n } from "@/lib/i18n/i18n-context";
 import { useAuth } from "../context/AuthContext";
 import { evaluatePasswordStrength } from "../lib/password-strength";
+import { GOOGLE_CLIENT_ID } from "../lib/google-identity";
 import { AuthLayout } from "../components/AuthLayout";
+import { GoogleButton } from "../components/GoogleButton";
+import { OrDivider } from "../components/OrDivider";
 
 export function SignupPage() {
-  const { register } = useAuth();
+  const { register, signInWithGoogle } = useAuth();
   const { t } = useI18n();
   const navigate = useNavigate();
 
@@ -23,6 +27,7 @@ export function SignupPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [googleError, setGoogleError] = useState<string | null>(null);
 
   const strength = useMemo(() => evaluatePasswordStrength(password), [password]);
 
@@ -35,6 +40,29 @@ export function SignupPage() {
       navigate("/setup/categories");
     } catch (err) {
       setError(errorMessage(err, t, t.auth.signup.failed));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleGoogleCredential(credential: string) {
+    setError(null);
+    setGoogleError(null);
+    setIsSubmitting(true);
+    try {
+      const { isNewUser } = await signInWithGoogle(credential, {
+        keepSignedIn: true,
+        acceptedTerms: true,
+      });
+      // Already signed up with this Google account: straight in.
+      navigate(isNewUser ? "/setup/categories" : "/app/dashboard");
+    } catch (err) {
+      if (err instanceof ApiError && err.code === "GOOGLE_LINK_REQUIRES_PASSWORD") {
+        // The email has a password account; signing in links the two.
+        navigate("/login", { state: { googleCredential: credential } });
+      } else {
+        setGoogleError(errorMessage(err, t, t.auth.signup.failed));
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -129,13 +157,27 @@ export function SignupPage() {
         >
           {isSubmitting ? t.auth.signup.submitting : t.auth.signup.submit}
         </Button>
-        <p className="mt-4 text-[12px] text-ink/55">
-          {t.auth.signup.haveAccount}{" "}
-          <Link to="/login" className="text-accent no-underline">
-            {t.auth.signup.signIn}
-          </Link>
-        </p>
       </form>
+
+      {GOOGLE_CLIENT_ID && (
+        <div className="mt-5 flex flex-col gap-3">
+          <OrDivider />
+          <GoogleButton
+            text="signup_with"
+            onCredential={handleGoogleCredential}
+            // The same terms apply to accounts created with Google.
+            disabled={isSubmitting || !acceptedTerms}
+          />
+          {googleError && <p className="m-0 text-[13px] text-accent-300">{googleError}</p>}
+        </div>
+      )}
+
+      <p className="mt-4 text-[12px] text-ink/55">
+        {t.auth.signup.haveAccount}{" "}
+        <Link to="/login" className="text-accent no-underline">
+          {t.auth.signup.signIn}
+        </Link>
+      </p>
     </AuthLayout>
   );
 }
