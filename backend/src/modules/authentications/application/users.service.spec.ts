@@ -2,13 +2,17 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { User } from '../domain/entities/user.entity';
 import { AuthProvider } from '../domain/enums/auth-provider.enum';
 import { EmailAlreadyRegisteredException } from '../domain/exceptions/email-already-registered.exception';
+import { GoogleAccountMismatchException } from '../domain/exceptions/google-account-mismatch.exception';
 import { GoogleAccountNotRegisteredException } from '../domain/exceptions/google-account-not-registered.exception';
 import { GoogleEmailNotVerifiedException } from '../domain/exceptions/google-email-not-verified.exception';
 import { GoogleLinkRequiresPasswordException } from '../domain/exceptions/google-link-requires-password.exception';
 import { IncorrectPasswordException } from '../domain/exceptions/incorrect-password.exception';
 import { UserNotFoundException } from '../domain/exceptions/user-not-found.exception';
 import { UsernameAlreadyRegisteredException } from '../domain/exceptions/username-already-registered.exception';
-import { GoogleIdentity } from '../domain/ports/google-identity-verifier';
+import {
+  GoogleIdentity,
+  GoogleIdentityVerifier,
+} from '../domain/ports/google-identity-verifier';
 import { PasswordHasher } from '../domain/ports/password-hasher';
 import { UsersRepository } from '../domain/repositories/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -19,6 +23,7 @@ describe('UsersService', () => {
   let service: UsersService;
   let repository: jest.Mocked<UsersRepository>;
   let passwordHasher: jest.Mocked<PasswordHasher>;
+  let googleIdentityVerifier: jest.Mocked<GoogleIdentityVerifier>;
 
   const dto: CreateUserDto = {
     email: 'jdoe@example.com',
@@ -50,12 +55,19 @@ describe('UsersService', () => {
             verify: jest.fn(),
           },
         },
+        {
+          provide: GoogleIdentityVerifier,
+          useValue: {
+            verify: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get(UsersService);
     repository = module.get(UsersRepository);
     passwordHasher = module.get(PasswordHasher);
+    googleIdentityVerifier = module.get(GoogleIdentityVerifier);
   });
 
   afterEach(() => {
@@ -350,6 +362,82 @@ describe('UsersService', () => {
       await expect(
         service.deleteAccount('user-1', { password: 'super-secret' }),
       ).rejects.toThrow(UserNotFoundException);
+    });
+
+    describe('confirmed with Google', () => {
+      const googleUser = Object.assign(new User(), {
+        id: 'user-2',
+        email: 'jdoe@gmail.com',
+        password: null,
+        provider: AuthProvider.GOOGLE,
+        providerId: '109876543210',
+      });
+      const identityOf = (subject: string): GoogleIdentity => ({
+        subject,
+        email: 'jdoe@gmail.com',
+        emailVerified: true,
+        name: 'Jane Doe',
+      });
+
+      it('deletes the account once its own Google account confirms', async () => {
+        repository.findById.mockResolvedValue(googleUser);
+        googleIdentityVerifier.verify.mockResolvedValue(
+          identityOf('109876543210'),
+        );
+
+        await service.deleteAccount('user-2', {
+          googleCredential: 'google-id-token',
+        });
+
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+        expect(googleIdentityVerifier.verify).toHaveBeenCalledWith(
+          'google-id-token',
+        );
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+        expect(repository.delete).toHaveBeenCalledWith(googleUser);
+      });
+
+      it('keeps the account when another Google account confirms', async () => {
+        repository.findById.mockResolvedValue(googleUser);
+        googleIdentityVerifier.verify.mockResolvedValue(
+          identityOf('someone-else'),
+        );
+
+        await expect(
+          service.deleteAccount('user-2', {
+            googleCredential: 'google-id-token',
+          }),
+        ).rejects.toThrow(GoogleAccountMismatchException);
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+        expect(repository.delete).not.toHaveBeenCalled();
+      });
+
+      it('keeps a password account that Google tries to confirm', async () => {
+        repository.findById.mockResolvedValue(user);
+        googleIdentityVerifier.verify.mockResolvedValue(
+          identityOf('109876543210'),
+        );
+
+        await expect(
+          service.deleteAccount('user-1', {
+            googleCredential: 'google-id-token',
+          }),
+        ).rejects.toThrow(GoogleAccountMismatchException);
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+        expect(repository.delete).not.toHaveBeenCalled();
+      });
+
+      it('keeps a Google-only account when given a password', async () => {
+        repository.findById.mockResolvedValue(googleUser);
+
+        await expect(
+          service.deleteAccount('user-2', { password: 'super-secret' }),
+        ).rejects.toThrow(IncorrectPasswordException);
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+        expect(passwordHasher.verify).not.toHaveBeenCalled();
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+        expect(repository.delete).not.toHaveBeenCalled();
+      });
     });
   });
 });

@@ -2,13 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../domain/entities/user.entity';
 import { AuthProvider } from '../domain/enums/auth-provider.enum';
 import { EmailAlreadyRegisteredException } from '../domain/exceptions/email-already-registered.exception';
+import { GoogleAccountMismatchException } from '../domain/exceptions/google-account-mismatch.exception';
 import { GoogleAccountNotRegisteredException } from '../domain/exceptions/google-account-not-registered.exception';
 import { GoogleEmailNotVerifiedException } from '../domain/exceptions/google-email-not-verified.exception';
 import { GoogleLinkRequiresPasswordException } from '../domain/exceptions/google-link-requires-password.exception';
 import { IncorrectPasswordException } from '../domain/exceptions/incorrect-password.exception';
 import { UserNotFoundException } from '../domain/exceptions/user-not-found.exception';
 import { UsernameAlreadyRegisteredException } from '../domain/exceptions/username-already-registered.exception';
-import { GoogleIdentity } from '../domain/ports/google-identity-verifier';
+import {
+  GoogleIdentity,
+  GoogleIdentityVerifier,
+} from '../domain/ports/google-identity-verifier';
 import { PasswordHasher } from '../domain/ports/password-hasher';
 import { UsersRepository } from '../domain/repositories/users.repository';
 import { CreateGoogleSessionDto } from './dto/create-google-session.dto';
@@ -30,6 +34,7 @@ export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly passwordHasher: PasswordHasher,
+    private readonly googleIdentityVerifier: GoogleIdentityVerifier,
   ) {}
 
   async register(dto: CreateUserDto): Promise<User> {
@@ -132,14 +137,35 @@ export class UsersService {
       throw new UserNotFoundException();
     }
 
+    await this.confirmOwnership(user, dto);
+    await this.usersRepository.delete(user);
+  }
+
+  // With the account's password, or, for an account linked to Google, with
+  // a fresh credential from that same Google account.
+  private async confirmOwnership(
+    user: User,
+    dto: DeleteAccountDto,
+  ): Promise<void> {
+    if (dto.googleCredential !== undefined) {
+      const identity = await this.googleIdentityVerifier.verify(
+        dto.googleCredential,
+      );
+      if (
+        user.provider !== AuthProvider.GOOGLE ||
+        user.providerId !== identity.subject
+      ) {
+        throw new GoogleAccountMismatchException();
+      }
+      return;
+    }
+
     if (
-      !user.password ||
-      !(await this.passwordHasher.verify(user.password, dto.password))
+      dto.password === undefined ||
+      !(await this.passwordMatches(user, dto.password))
     ) {
       throw new IncorrectPasswordException();
     }
-
-    await this.usersRepository.delete(user);
   }
 
   private async linkGoogle(
