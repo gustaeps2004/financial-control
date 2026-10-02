@@ -59,7 +59,11 @@ export function GoogleButton({ text, onCredential, disabled = false }: GoogleBut
   }, [locale, text]);
 
   if (!GOOGLE_CLIENT_ID || failed) {
-    return <p className="m-0 text-[12px] text-neutral-500">{t.auth.google.unavailable}</p>;
+    return (
+      <p className="m-0 text-[12px] text-neutral-500">
+        {GOOGLE_CLIENT_ID ? t.auth.google.unavailable : t.apiErrors.GOOGLE_SIGN_IN_DISABLED}
+      </p>
+    );
   }
 
   return (

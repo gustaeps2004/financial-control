@@ -531,7 +531,7 @@ export const ptBR: Messages = {
     EMAIL_ALREADY_REGISTERED: "Já existe uma conta com este e-mail.",
     USERNAME_ALREADY_REGISTERED: "Este nome de usuário já está em uso.",
     USER_NOT_FOUND: "Esta conta não existe mais.",
-    GOOGLE_SIGN_IN_DISABLED: "O login com o Google não está configurado no servidor.",
+    GOOGLE_SIGN_IN_DISABLED: "O login com o Google não está configurado.",
     INVALID_GOOGLE_CREDENTIAL: "O Google não confirmou que é você. Tente de novo.",
     GOOGLE_EMAIL_NOT_VERIFIED:
       "O e-mail da sua conta Google ainda não foi verificado. Verifique-o no Google e tente de novo.",

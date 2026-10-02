@@ -540,7 +540,7 @@ export const en = {
     EMAIL_ALREADY_REGISTERED: "There's already an account with this email.",
     USERNAME_ALREADY_REGISTERED: "This username is already taken.",
     USER_NOT_FOUND: "This account no longer exists.",
-    GOOGLE_SIGN_IN_DISABLED: "Google sign-in isn't set up on the server.",
+    GOOGLE_SIGN_IN_DISABLED: "Google sign-in isn't set up.",
     INVALID_GOOGLE_CREDENTIAL: "Google couldn't confirm it's you. Try again.",
     GOOGLE_EMAIL_NOT_VERIFIED:
       "Your Google account's email isn't verified yet. Verify it with Google, then try again.",
