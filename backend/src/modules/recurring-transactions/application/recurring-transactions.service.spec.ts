@@ -14,6 +14,7 @@ import { CategoryKind } from '../../categories/domain/enums/category-kind.enum';
 import { RecurringTransaction } from '../domain/entities/recurring-transaction.entity';
 import { InvalidRecurringPeriodException } from '../domain/exceptions/invalid-recurring-period.exception';
 import { RecurringTransactionNotFoundException } from '../domain/exceptions/recurring-transaction-not-found.exception';
+import { OccurrencePaymentsRepository } from '../domain/repositories/occurrence-payments.repository';
 import { RecurringTransactionsRepository } from '../domain/repositories/recurring-transactions.repository';
 import { CreateRecurringTransactionDto } from './dto/create-recurring-transaction.dto';
 import { RecurringTransactionsService } from './recurring-transactions.service';
@@ -21,6 +22,7 @@ import { RecurringTransactionsService } from './recurring-transactions.service';
 describe('RecurringTransactionsService', () => {
   let service: RecurringTransactionsService;
   let repository: jest.Mocked<RecurringTransactionsRepository>;
+  let paymentsRepository: jest.Mocked<OccurrencePaymentsRepository>;
   let categoriesService: jest.Mocked<CategoriesService>;
   let cardsService: jest.Mocked<CardsService>;
 
@@ -61,6 +63,14 @@ describe('RecurringTransactionsService', () => {
           },
         },
         {
+          provide: OccurrencePaymentsRepository,
+          useValue: {
+            findAllByUser: jest.fn(),
+            add: jest.fn(),
+            remove: jest.fn(),
+          },
+        },
+        {
           provide: CategoriesService,
           useValue: { getOwned: jest.fn() },
         },
@@ -73,6 +83,7 @@ describe('RecurringTransactionsService', () => {
 
     service = module.get(RecurringTransactionsService);
     repository = module.get(RecurringTransactionsRepository);
+    paymentsRepository = module.get(OccurrencePaymentsRepository);
     categoriesService = module.get(CategoriesService);
     cardsService = module.get(CardsService);
   });
@@ -243,6 +254,58 @@ describe('RecurringTransactionsService', () => {
 
       // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
       expect(repository.remove).toHaveBeenCalledWith(recurring);
+    });
+  });
+
+  describe('paid marks', () => {
+    const october = YearMonth.parse('2026-10');
+
+    it('marks the month of a recurring transaction paid', async () => {
+      repository.findById.mockResolvedValue(
+        Object.assign(new RecurringTransaction(), { id: 'rec-1', userId }),
+      );
+
+      await service.markPaid(userId, 'rec-1', october);
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(paymentsRepository.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId,
+          recurringTransactionId: 'rec-1',
+          month: october,
+        }),
+      );
+    });
+
+    it('marks it unpaid again', async () => {
+      repository.findById.mockResolvedValue(
+        Object.assign(new RecurringTransaction(), { id: 'rec-1', userId }),
+      );
+
+      await service.markUnpaid(userId, 'rec-1', october);
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(paymentsRepository.remove).toHaveBeenCalledWith('rec-1', october);
+    });
+
+    it("leaves another user's recurring transactions alone", async () => {
+      repository.findById.mockResolvedValue(
+        Object.assign(new RecurringTransaction(), {
+          id: 'rec-1',
+          userId: 'someone-else',
+        }),
+      );
+
+      await expect(service.markPaid(userId, 'rec-1', october)).rejects.toThrow(
+        RecurringTransactionNotFoundException,
+      );
+      await expect(
+        service.markUnpaid(userId, 'rec-1', october),
+      ).rejects.toThrow(RecurringTransactionNotFoundException);
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(paymentsRepository.add).not.toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- jest.Mocked method reference, not called unbound
+      expect(paymentsRepository.remove).not.toHaveBeenCalled();
     });
   });
 });

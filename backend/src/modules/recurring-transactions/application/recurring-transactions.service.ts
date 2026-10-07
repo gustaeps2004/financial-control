@@ -4,9 +4,11 @@ import { assertValidPayment } from '../../../shared/domain/payment/payment-rules
 import { CardsService } from '../../cards/application/cards.service';
 import { CategoriesService } from '../../categories/application/categories.service';
 import { Category } from '../../categories/domain/entities/category.entity';
+import { OccurrencePayment } from '../domain/entities/occurrence-payment.entity';
 import { RecurringTransaction } from '../domain/entities/recurring-transaction.entity';
 import { InvalidRecurringPeriodException } from '../domain/exceptions/invalid-recurring-period.exception';
 import { RecurringTransactionNotFoundException } from '../domain/exceptions/recurring-transaction-not-found.exception';
+import { OccurrencePaymentsRepository } from '../domain/repositories/occurrence-payments.repository';
 import { RecurringTransactionsRepository } from '../domain/repositories/recurring-transactions.repository';
 import { CreateRecurringTransactionDto } from './dto/create-recurring-transaction.dto';
 import { UpdateRecurringTransactionDto } from './dto/update-recurring-transaction.dto';
@@ -15,6 +17,7 @@ import { UpdateRecurringTransactionDto } from './dto/update-recurring-transactio
 export class RecurringTransactionsService {
   constructor(
     private readonly recurringTransactionsRepository: RecurringTransactionsRepository,
+    private readonly occurrencePaymentsRepository: OccurrencePaymentsRepository,
     private readonly categoriesService: CategoriesService,
     private readonly cardsService: CardsService,
   ) {}
@@ -98,6 +101,35 @@ export class RecurringTransactionsService {
   async remove(userId: string, id: string): Promise<void> {
     const recurringTransaction = await this.getOwned(userId, id);
     await this.recurringTransactionsRepository.remove(recurringTransaction);
+  }
+
+  // Any month can be marked, even one outside the validity window: a
+  // transaction logged by hand for that month still counts as its
+  // occurrence. Which occurrences offer a mark is up to the reports.
+  async markPaid(userId: string, id: string, month: YearMonth): Promise<void> {
+    await this.getOwned(userId, id);
+    await this.occurrencePaymentsRepository.add(
+      Object.assign(new OccurrencePayment(), {
+        userId,
+        recurringTransactionId: id,
+        month,
+      }),
+    );
+  }
+
+  async markUnpaid(
+    userId: string,
+    id: string,
+    month: YearMonth,
+  ): Promise<void> {
+    await this.getOwned(userId, id);
+    await this.occurrencePaymentsRepository.remove(id, month);
+  }
+
+  // A handful of rows per recurring transaction per year, so readers get
+  // them whole and filter in memory.
+  listOccurrencePayments(userId: string): Promise<OccurrencePayment[]> {
+    return this.occurrencePaymentsRepository.findAllByUser(userId);
   }
 
   /** Public lookup for other modules. */

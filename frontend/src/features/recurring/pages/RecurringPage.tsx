@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Repeat } from "@phosphor-icons/react";
+import { CheckCircle, Circle, Repeat } from "@phosphor-icons/react";
 import { Card } from "@/shared/ui/Card";
 import { Dialog } from "@/shared/ui/Dialog";
 import { cn } from "@/shared/lib/cn";
@@ -7,10 +7,36 @@ import { currentYearMonth } from "@/shared/lib/dates";
 import { formatMoney, formatMoneyInput } from "@/shared/lib/money";
 import { errorMessage } from "@/lib/i18n/error-message";
 import { useI18n } from "@/lib/i18n/i18n-context";
+import { useLedger } from "@/features/reports/hooks/use-reports";
+import type { LedgerEntry } from "@/features/reports/types";
+import { PaidToggle } from "../components/PaidToggle";
 import { RecurringForm } from "../components/RecurringForm";
 import { RecurringTable } from "../components/RecurringTable";
+import { usePaidMarks } from "../hooks/use-paid-marks";
 import { useRecurringTransactions } from "../hooks/use-recurring";
 import type { RecurringTransaction } from "../types";
+
+// A recurring item's bill in a month: the entry carrying its paid mark
+// (automatic, or the value logged by hand) and what the month adds up to.
+interface MonthBill {
+  entry: LedgerEntry;
+  amount: number;
+}
+
+// Keyed by recurring item. Only bills paid on their own have a paid mark:
+// card charges and income stay out.
+function billsOf(entries: LedgerEntry[]): Map<string, MonthBill> {
+  const bills = new Map<string, MonthBill>();
+  for (const entry of entries) {
+    if (!entry.recurringTransactionId || entry.paid === null) continue;
+    const bill = bills.get(entry.recurringTransactionId);
+    bills.set(entry.recurringTransactionId, {
+      entry,
+      amount: (bill?.amount ?? 0) + entry.amount,
+    });
+  }
+  return bills;
+}
 
 export function RecurringPage() {
   const { t } = useI18n();
@@ -24,6 +50,12 @@ export function RecurringPage() {
     (item) => item.startMonth <= thisMonth && (!item.endMonth || item.endMonth >= thisMonth),
   );
   const monthlyTotal = activeNow.reduce((sum, item) => sum + item.amount, 0);
+
+  const ledger = useLedger(thisMonth);
+  const paidMarks = usePaidMarks();
+  const bills = billsOf(ledger.data?.entries ?? []);
+  const unpaid = [...bills.values()].filter((bill) => !paidMarks.isPaid(bill.entry));
+  const leftToPay = unpaid.reduce((sum, bill) => sum + bill.amount, 0);
 
   async function run(action: () => Promise<unknown>, failure: string) {
     setActionError(null);
@@ -39,6 +71,24 @@ export function RecurringPage() {
     void run(() => removeRecurring(item.id), t.recurring.deleteFailed(item.description));
   }
 
+  function renderPaid(item: RecurringTransaction) {
+    const bill = bills.get(item.id);
+    if (!bill) return null;
+    return (
+      <PaidToggle
+        paid={paidMarks.isPaid(bill.entry) ?? false}
+        name={item.description}
+        saving={paidMarks.isSaving(bill.entry)}
+        onChange={(paid) =>
+          void run(
+            () => paidMarks.setPaid(bill.entry, paid),
+            t.recurring.paid.failed(item.description),
+          )
+        }
+      />
+    );
+  }
+
   return (
     <div>
       <div className="mb-4.5">
@@ -46,6 +96,23 @@ export function RecurringPage() {
         <p className="m-0 max-w-[620px] text-[13px] text-ink/55 text-pretty">
           {t.recurring.intro(activeNow.length, formatMoney(monthlyTotal))}
         </p>
+        {bills.size > 0 && (
+          <p className="m-0 mt-2 flex items-start gap-1.5 text-[13px] text-ink/85">
+            {unpaid.length === 0 ? (
+              <CheckCircle size={16} weight="fill" className="mt-0.5 flex-none text-accent" />
+            ) : (
+              <Circle size={16} className="mt-0.5 flex-none text-accent" />
+            )}
+            {unpaid.length === 0
+              ? t.recurring.paid.allPaid(thisMonth)
+              : t.recurring.paid.progress(
+                  thisMonth,
+                  bills.size - unpaid.length,
+                  bills.size,
+                  formatMoney(leftToPay),
+                )}
+          </p>
+        )}
       </div>
 
       <Card className="mb-4 gap-3 p-3.5">
@@ -68,11 +135,17 @@ export function RecurringPage() {
           {errorMessage(error, t, t.recurring.loadFailed)}
         </p>
       )}
+      {ledger.error && (
+        <p className="mb-3 text-[12.5px] text-accent-300">
+          {errorMessage(ledger.error, t, t.transactions.loadFailed(thisMonth))}
+        </p>
+      )}
 
       <div className={cn("transition-opacity", isLoading && "opacity-60")}>
         <RecurringTable
           recurring={recurring}
           emptyMessage={isLoading ? t.common.loading : t.recurring.empty}
+          renderPaid={bills.size > 0 ? renderPaid : undefined}
           onEdit={setEditing}
           onEnd={(item) =>
             void run(

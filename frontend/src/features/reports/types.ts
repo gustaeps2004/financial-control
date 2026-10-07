@@ -54,6 +54,9 @@ export interface LedgerEntry {
   installments: number;
   statementMonth: string | null;
   projected: boolean;
+  // Recurring bills paid on their own (not on a card, not income): whether
+  // this month's one was ticked off as paid. Null for everything else.
+  paid: boolean | null;
 }
 
 export interface LedgerView {

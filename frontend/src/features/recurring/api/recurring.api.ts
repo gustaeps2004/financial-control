@@ -18,4 +18,13 @@ export const recurringApi = {
     ),
   remove: (id: string, token: string) =>
     apiClient.delete(`/recurring-transactions/${id}`, withAuth(token)),
+  // Both are safe to repeat: the month just ends up paid, or not.
+  markPaid: (id: string, month: string, token: string) =>
+    apiClient.put<void, undefined>(
+      `/recurring-transactions/${id}/payments/${month}`,
+      undefined,
+      withAuth(token),
+    ),
+  markUnpaid: (id: string, month: string, token: string) =>
+    apiClient.delete(`/recurring-transactions/${id}/payments/${month}`, withAuth(token)),
 };

@@ -30,6 +30,7 @@ function creditEntry(overrides: Partial<LedgerEntry>): LedgerEntry {
     cardId: itau.id,
     installments: 1,
     projected: false,
+    paid: null,
     ...overrides,
   };
 }

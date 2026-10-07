@@ -25,6 +25,9 @@ export interface LedgerEntryView {
   // lands on. Card payments: the statement being paid.
   statementMonth: string | null;
   projected: boolean;
+  // Recurring bills paid on their own: whether this month's one was marked
+  // paid. Null for everything else.
+  paid: boolean | null;
 }
 
 export interface LedgerView {
@@ -63,6 +66,7 @@ export function ledgerView(
             ? card.statementMonthFor(entry.date).toString()
             : null,
         projected: entry.projected,
+        paid: entry.paid,
       };
     });
 
@@ -84,6 +88,7 @@ export function ledgerView(
       installments: 1,
       statementMonth: payment.statementMonth.toString(),
       projected: false,
+      paid: null,
     }));
 
   return {

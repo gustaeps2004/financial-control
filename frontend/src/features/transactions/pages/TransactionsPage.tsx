@@ -11,6 +11,8 @@ import { formatMoney, formatMoneyInput } from "@/shared/lib/money";
 import { errorMessage } from "@/lib/i18n/error-message";
 import { useI18n } from "@/lib/i18n/i18n-context";
 import { useCategories } from "@/features/categories/context/CategoriesContext";
+import { PaidToggle } from "@/features/recurring/components/PaidToggle";
+import { usePaidMarks } from "@/features/recurring/hooks/use-paid-marks";
 import { useLedger } from "@/features/reports/hooks/use-reports";
 import type { LedgerEntry } from "@/features/reports/types";
 import { LedgerTable } from "../components/LedgerTable";
@@ -43,6 +45,7 @@ export function TransactionsPage() {
   const ledger = useLedger(month);
   const { createTransaction, updateTransaction, removeTransaction, removeStatementPayment } =
     useTransactionActions();
+  const paidMarks = usePaidMarks();
 
   const entries = ledger.data?.entries ?? [];
   const visible =
@@ -71,6 +74,28 @@ export function TransactionsPage() {
     } catch (err) {
       setActionError(errorMessage(err, t, t.transactions.deleteFailed(entryTitle(entry, t))));
     }
+  }
+
+  async function handleSetPaid(entry: LedgerEntry, paid: boolean) {
+    setActionError(null);
+    try {
+      await paidMarks.setPaid(entry, paid);
+    } catch (err) {
+      setActionError(errorMessage(err, t, t.recurring.paid.failed(entryTitle(entry, t))));
+    }
+  }
+
+  function renderPaid(entry: LedgerEntry) {
+    const paid = paidMarks.isPaid(entry);
+    if (paid === null) return null;
+    return (
+      <PaidToggle
+        paid={paid}
+        name={entryTitle(entry, t)}
+        saving={paidMarks.isSaving(entry)}
+        onChange={(next) => void handleSetPaid(entry, next)}
+      />
+    );
   }
 
   return (
@@ -128,6 +153,7 @@ export function TransactionsPage() {
         <LedgerTable
           entries={visible}
           emptyMessage={ledger.isLoading ? t.common.loading : t.transactions.empty(month)}
+          renderPaid={visible.some((entry) => entry.paid !== null) ? renderPaid : undefined}
           onEdit={(entry) => setDialog({ mode: "edit", entry })}
           onAdjust={(entry) => setDialog({ mode: "adjust", entry })}
           onRemove={(entry) => void handleRemove(entry)}

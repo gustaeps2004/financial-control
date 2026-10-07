@@ -155,6 +155,7 @@ export class ReportsService {
       categories,
       cards,
       recurringTransactions,
+      occurrencePayments,
       adjustments,
       payments,
       transactions,
@@ -162,6 +163,7 @@ export class ReportsService {
       this.categoriesService.findAllIncludingDeleted(userId),
       this.cardsService.findAllIncludingDeleted(userId),
       this.recurringTransactionsService.findAll(userId),
+      this.recurringTransactionsService.listOccurrencePayments(userId),
       this.cardStatementsService.listAdjustments(userId),
       this.cardStatementsService.listPayments(userId),
       range
@@ -191,6 +193,7 @@ export class ReportsService {
       entries: buildLedger({
         transactions,
         recurringTransactions,
+        occurrencePayments,
         categories: refs.categoryMap(),
         recurringMonths: {
           from: months.from.plus(-STATEMENT_LOOKBACK_MONTHS),

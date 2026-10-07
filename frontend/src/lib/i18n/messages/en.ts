@@ -299,6 +299,8 @@ export const en = {
       onStatement: (month: string) => `on the ${monthYear(month)} statement`,
       automatic: "Automatic",
       logActual: "Log actual",
+      // Whether the month's recurring bills were paid.
+      status: "Status",
     },
   },
 
@@ -404,6 +406,19 @@ export const en = {
       upcoming: "upcoming",
       endHint: "Keep it in the past, stop it from next month on",
       end: "End",
+      thisMonth: "This month",
+    },
+    // Bills paid on their own — a boleto, a Pix, another bank's app — get
+    // ticked off as paid, month by month.
+    paid: {
+      paid: "Paid",
+      unpaid: "Unpaid",
+      markPaid: "Mark as paid",
+      markUnpaid: "Mark as not paid",
+      failed: (name: string) => `Couldn't update "${name}". Please try again.`,
+      progress: (month: string, paid: number, total: number, left: string) =>
+        `${monthYear(month)}: ${paid} of ${total} ${total === 1 ? "bill" : "bills"} paid · ${left} still to pay.`,
+      allPaid: (month: string) => `Every bill of ${monthYear(month)} is paid.`,
     },
   },
 

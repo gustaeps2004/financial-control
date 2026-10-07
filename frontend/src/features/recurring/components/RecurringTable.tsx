@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { PencilSimple, X } from "@phosphor-icons/react";
 import { Table, TableBody, TableHead, TableRow, Td, Th } from "@/shared/ui/Table";
 import { Tag } from "@/shared/ui/Tag";
@@ -13,6 +14,8 @@ import type { RecurringTransaction } from "../types";
 interface RecurringTableProps {
   recurring: RecurringTransaction[];
   emptyMessage: string;
+  // Fills a column with whether this month's bill of each item was paid.
+  renderPaid?: (item: RecurringTransaction) => ReactNode;
   onEdit?: (item: RecurringTransaction) => void;
   onEnd?: (item: RecurringTransaction) => void;
   onRemove?: (item: RecurringTransaction) => void;
@@ -36,7 +39,14 @@ function periodLabel(item: RecurringTransaction, t: Messages): string {
     : t.recurring.table.since(item.startMonth);
 }
 
-export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemove }: RecurringTableProps) {
+export function RecurringTable({
+  recurring,
+  emptyMessage,
+  renderPaid,
+  onEdit,
+  onEnd,
+  onRemove,
+}: RecurringTableProps) {
   const { categories } = useCategories();
   const { cards } = useCards();
   const { t } = useI18n();
@@ -57,6 +67,7 @@ export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemov
           <Th className="w-14">{t.fields.day}</Th>
           <Th>{t.recurring.table.period}</Th>
           <Th>{t.fields.paidWith}</Th>
+          {renderPaid && <Th>{t.recurring.table.thisMonth}</Th>}
           <Th className="text-right">{t.recurring.table.monthly}</Th>
           {hasActions && <Th className="w-px" />}
         </TableHead>
@@ -86,6 +97,7 @@ export function RecurringTable({ recurring, emptyMessage, onEdit, onEnd, onRemov
                   )}
                 </Td>
                 <Td className="text-[12.5px] text-ink/60">{paidWith || "—"}</Td>
+                {renderPaid && <Td>{renderPaid(item)}</Td>}
                 <Td className="text-right whitespace-nowrap tabular-nums">{formatMoney(item.amount)}</Td>
                 {hasActions && (
                   <Td className="text-right whitespace-nowrap">

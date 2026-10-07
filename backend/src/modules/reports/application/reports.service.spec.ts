@@ -10,12 +10,16 @@ import { CategoriesService } from '../../categories/application/categories.servi
 import { Category } from '../../categories/domain/entities/category.entity';
 import { CategoryKind } from '../../categories/domain/enums/category-kind.enum';
 import { RecurringTransactionsService } from '../../recurring-transactions/application/recurring-transactions.service';
+import { OccurrencePayment } from '../../recurring-transactions/domain/entities/occurrence-payment.entity';
+import { RecurringTransaction } from '../../recurring-transactions/domain/entities/recurring-transaction.entity';
 import { TransactionsService } from '../../transactions/application/transactions.service';
 import { Transaction } from '../../transactions/domain/entities/transaction.entity';
 import { ReportsService } from './reports.service';
 
 describe('ReportsService', () => {
   let service: ReportsService;
+  let categoriesService: jest.Mocked<CategoriesService>;
+  let recurringTransactionsService: jest.Mocked<RecurringTransactionsService>;
   let transactionsService: jest.Mocked<TransactionsService>;
 
   const userId = 'user-1';
@@ -58,7 +62,10 @@ describe('ReportsService', () => {
         },
         {
           provide: RecurringTransactionsService,
-          useValue: { findAll: jest.fn().mockResolvedValue([]) },
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([]),
+            listOccurrencePayments: jest.fn().mockResolvedValue([]),
+          },
         },
         {
           provide: CardStatementsService,
@@ -75,6 +82,8 @@ describe('ReportsService', () => {
     }).compile();
 
     service = module.get(ReportsService);
+    categoriesService = module.get(CategoriesService);
+    recurringTransactionsService = module.get(RecurringTransactionsService);
     transactionsService = module.get(TransactionsService);
   });
 
@@ -172,6 +181,48 @@ describe('ReportsService', () => {
     expect(summary.expenses).toHaveLength(1);
     expect(summary.expenses[0].category.name).toBe('Groceries');
     expect(summary.expenses[0].total).toBe(80);
+  });
+
+  it('tells in the ledger whether the month of a recurring bill was paid', async () => {
+    const rent = Object.assign(new Category(), {
+      id: 'cat-rent',
+      userId,
+      name: 'Rent',
+      kind: CategoryKind.FIXED_BILL,
+      deletedAt: null,
+    });
+    categoriesService.findAllIncludingDeleted.mockResolvedValue([rent]);
+    recurringTransactionsService.findAll.mockResolvedValue([
+      Object.assign(new RecurringTransaction(), {
+        id: 'rec-rent',
+        userId,
+        categoryId: rent.id,
+        description: 'Rent',
+        amount: 2000,
+        dayOfMonth: 5,
+        startMonth: YearMonth.parse('2026-01'),
+        endMonth: null,
+        paymentMethod: PaymentMethod.BANK_TRANSFER,
+        cardId: null,
+      }),
+    ]);
+    recurringTransactionsService.listOccurrencePayments.mockResolvedValue([
+      Object.assign(new OccurrencePayment(), {
+        userId,
+        recurringTransactionId: 'rec-rent',
+        month: YearMonth.parse('2026-09'),
+      }),
+    ]);
+
+    const september = await service.ledger(userId, YearMonth.parse('2026-09'));
+    const october = await service.ledger(userId, YearMonth.parse('2026-10'));
+
+    expect(september.entries).toEqual([
+      expect.objectContaining({ key: 'rec-rent|2026-09', paid: true }),
+    ]);
+    expect(october.entries).toEqual([
+      expect.objectContaining({ key: 'rec-rent|2026-10', paid: false }),
+    ]);
   });
 
   it('refuses the statement of a card the user does not have', async () => {

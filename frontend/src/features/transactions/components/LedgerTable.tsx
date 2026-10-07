@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { PencilSimple, X } from "@phosphor-icons/react";
 import { Table, TableBody, TableHead, TableRow, Td, Th } from "@/shared/ui/Table";
 import { Tag } from "@/shared/ui/Tag";
@@ -11,6 +12,8 @@ import { entryDetail, entryTitle, paidWithLabel, signedAmount } from "../lib/led
 interface LedgerTableProps {
   entries: LedgerEntry[];
   emptyMessage: string;
+  // Fills a status column: whether each recurring bill was paid.
+  renderPaid?: (entry: LedgerEntry) => ReactNode;
   onEdit?: (entry: LedgerEntry) => void;
   onAdjust?: (entry: LedgerEntry) => void;
   onRemove?: (entry: LedgerEntry) => void;
@@ -34,7 +37,14 @@ function CategoryTag({ entry }: { entry: LedgerEntry }) {
   );
 }
 
-export function LedgerTable({ entries, emptyMessage, onEdit, onAdjust, onRemove }: LedgerTableProps) {
+export function LedgerTable({
+  entries,
+  emptyMessage,
+  renderPaid,
+  onEdit,
+  onAdjust,
+  onRemove,
+}: LedgerTableProps) {
   const { t } = useI18n();
 
   if (entries.length === 0) {
@@ -51,6 +61,7 @@ export function LedgerTable({ entries, emptyMessage, onEdit, onAdjust, onRemove 
           <Th>{t.fields.description}</Th>
           <Th>{t.fields.category}</Th>
           <Th>{t.fields.paidWith}</Th>
+          {renderPaid && <Th>{t.transactions.ledger.status}</Th>}
           <Th className="text-right">{t.fields.amount}</Th>
           {hasActions && <Th className="w-px" />}
         </TableHead>
@@ -79,6 +90,7 @@ export function LedgerTable({ entries, emptyMessage, onEdit, onAdjust, onRemove 
                   <CategoryTag entry={entry} />
                 </Td>
                 <Td className="text-[12.5px] text-ink/60">{paidWithLabel(entry, t)}</Td>
+                {renderPaid && <Td>{renderPaid(entry)}</Td>}
                 <Td
                   className={cn(
                     "text-right whitespace-nowrap tabular-nums",

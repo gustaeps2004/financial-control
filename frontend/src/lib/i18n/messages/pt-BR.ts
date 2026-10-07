@@ -294,6 +294,7 @@ export const ptBR: Messages = {
       onStatement: (month) => `na fatura de ${inlineMonthYear(month)}`,
       automatic: "Automático",
       logActual: "Lançar valor real",
+      status: "Situação",
     },
   },
 
@@ -400,6 +401,17 @@ export const ptBR: Messages = {
       upcoming: "futuro",
       endHint: "Mantém os meses passados e encerra a partir do mês que vem",
       end: "Encerrar",
+      thisMonth: "Este mês",
+    },
+    paid: {
+      paid: "Paga",
+      unpaid: "A pagar",
+      markPaid: "Marcar como paga",
+      markUnpaid: "Marcar como não paga",
+      failed: (name) => `Não foi possível atualizar "${name}". Tente de novo.`,
+      progress: (month, paid, total, left) =>
+        `${monthYear(month)}: ${paid} de ${total} ${total === 1 ? "conta paga" : "contas pagas"} · faltam ${left}.`,
+      allPaid: (month) => `Todas as contas de ${inlineMonthYear(month)} estão pagas.`,
     },
   },
 

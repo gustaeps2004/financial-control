@@ -182,6 +182,7 @@ const months = YearMonth.range(
 const entries = buildLedger({
   transactions,
   recurringTransactions,
+  occurrencePayments: [],
   categories,
   recurringMonths: { from: months[0], to: months[11] },
   currentMonth,
