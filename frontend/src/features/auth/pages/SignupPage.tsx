@@ -5,6 +5,7 @@ import { Field } from "@/shared/ui/Field";
 import { Input } from "@/shared/ui/Input";
 import { PasswordInput } from "@/shared/ui/PasswordInput";
 import { Checkbox } from "@/shared/ui/Checkbox";
+import { LinkedText } from "@/shared/ui/LinkedText";
 import { cn } from "@/shared/lib/cn";
 import { ApiError } from "@/lib/http/api-error";
 import { errorMessage } from "@/lib/i18n/error-message";
@@ -141,7 +142,14 @@ export function SignupPage() {
         </p>
 
         <Checkbox
-          label={t.auth.signup.acceptTerms}
+          label={
+            <LinkedText
+              text={t.auth.signup.acceptTerms}
+              // In a new tab, so the form keeps what was typed.
+              newTab
+              linkClassName="text-accent no-underline hover:underline"
+            />
+          }
           checked={acceptedTerms}
           onChange={(e) => setAcceptedTerms(e.target.checked)}
           required

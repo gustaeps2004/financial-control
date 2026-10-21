@@ -31,6 +31,12 @@ function fullDate(isoDate: string): string {
   return `${day}/${month}/${year}`;
 }
 
+/** "21 de outubro de 2026": a date in running text. */
+function longDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return `${day} de ${MONTHS[month! - 1]!.toLowerCase()} de ${year}`;
+}
+
 export const ptBR: Messages = {
   dates: {
     months: MONTHS,
@@ -468,6 +474,10 @@ export const ptBR: Messages = {
       deleteAccount: "Excluir conta",
       failed: "Não foi possível excluir sua conta.",
     },
+    legal: {
+      title: "Privacidade e termos",
+      text: "Como o Fecha Mês trata seus dados e como exercer seus direitos pela LGPD.",
+    },
   },
 
   controls: {
@@ -514,7 +524,7 @@ export const ptBR: Messages = {
       namePlaceholder: "Ana Ferreira",
       emailPlaceholder: "voce@exemplo.com.br",
       passwordPlaceholder: "Pelo menos 8 caracteres",
-      acceptTerms: "Concordo com os Termos de Uso e a Política de Privacidade",
+      acceptTerms: "Concordo com os [Termos de Uso](/terms) e a [Política de Privacidade](/privacy)",
       submit: "Criar conta",
       submitting: "Criando conta…",
       haveAccount: "Já tem uma conta?",
@@ -532,6 +542,14 @@ export const ptBR: Messages = {
       unavailable:
         "Não foi possível carregar o login com o Google. Verifique sua conexão e recarregue a página.",
     },
+  },
+
+  legal: {
+    terms: "Termos de Uso",
+    privacy: "Política de Privacidade",
+    documents: "Documentos legais",
+    contents: "Sumário",
+    updatedOn: (isoDate) => `Última atualização: ${longDate(isoDate)}`,
   },
 
   apiErrors: {

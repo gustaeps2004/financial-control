@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
+import { LegalLinks } from "@/features/legal/components/LegalLinks";
 
 interface AuthLayoutProps {
   // Below the brand row: the pitch and its footnote.
@@ -24,7 +25,10 @@ export function AuthLayout({ hero, children }: AuthLayoutProps) {
         {hero}
       </div>
       <div className="flex flex-1 basis-[400px] items-center bg-canvas p-11">
-        <div className="w-full max-w-[330px]">{children}</div>
+        <div className="w-full max-w-[330px]">
+          {children}
+          <LegalLinks className="mt-8" />
+        </div>
       </div>
     </div>
   );

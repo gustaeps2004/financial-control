@@ -13,6 +13,7 @@ import { RecurringPage } from "@/features/recurring/pages/RecurringPage";
 import { StatementsPage } from "@/features/statements/pages/StatementsPage";
 import { AnnualPage } from "@/features/annual/pages/AnnualPage";
 import { SettingsPage } from "@/features/settings/pages/SettingsPage";
+import { LegalPage } from "@/features/legal/pages/LegalPage";
 import { AppShell } from "./AppShell";
 import { AuthenticatedArea } from "./AuthenticatedArea";
 import { RootRedirect } from "./RootRedirect";
@@ -40,6 +41,9 @@ export function App() {
               </RedirectIfAuthenticated>
             }
           />
+
+          <Route path="terms" element={<LegalPage kind="terms" />} />
+          <Route path="privacy" element={<LegalPage kind="privacy" />} />
 
           <Route path="setup" element={<AuthenticatedArea />}>
             <Route element={<SetupLayout />}>

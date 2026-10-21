@@ -31,6 +31,12 @@ function fullDate(isoDate: string): string {
   return `${day} ${MONTHS_SHORT[month! - 1]} ${year}`;
 }
 
+/** "October 21, 2026": a date in running text. */
+function longDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return `${MONTHS[month! - 1]} ${day}, ${year}`;
+}
+
 export const en = {
   dates: {
     months: MONTHS,
@@ -478,6 +484,10 @@ export const en = {
       deleteAccount: "Delete account",
       failed: "Couldn't delete your account.",
     },
+    legal: {
+      title: "Privacy and terms",
+      text: "How Fecha Mês handles your data, and how to exercise your rights under Brazil's data protection law (LGPD).",
+    },
   },
 
   controls: {
@@ -525,7 +535,8 @@ export const en = {
       namePlaceholder: "Ana Ferreira",
       emailPlaceholder: "you@example.com",
       passwordPlaceholder: "At least 8 characters",
-      acceptTerms: "I agree to the Terms of Use and Privacy Policy",
+      // [label](href) is a link: see LinkedText.
+      acceptTerms: "I agree to the [Terms of Use](/terms) and [Privacy Policy](/privacy)",
       submit: "Create account",
       submitting: "Creating account…",
       haveAccount: "Already have one?",
@@ -543,6 +554,15 @@ export const en = {
       or: "or",
       unavailable: "Google sign-in couldn't load. Check your connection and reload the page.",
     },
+  },
+
+  legal: {
+    terms: "Terms of Use",
+    privacy: "Privacy Policy",
+    // Names the switch between the two documents, for screen readers.
+    documents: "Legal documents",
+    contents: "Contents",
+    updatedOn: (isoDate: string) => `Last updated on ${longDate(isoDate)}`,
   },
 
   // Keyed by the `code` of the API's error responses.

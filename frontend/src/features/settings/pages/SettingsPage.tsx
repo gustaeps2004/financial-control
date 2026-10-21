@@ -5,6 +5,7 @@ import { AccountCard } from "../components/AccountCard";
 import { PreferencesCard } from "../components/PreferencesCard";
 import { CardsSummaryCard } from "../components/CardsSummaryCard";
 import { RecurringSummaryCard } from "../components/RecurringSummaryCard";
+import { LegalCard } from "../components/LegalCard";
 import { DangerZoneCard } from "../components/DangerZoneCard";
 
 export function SettingsPage() {
@@ -23,6 +24,7 @@ export function SettingsPage() {
         </Card>
         <CardsSummaryCard />
         <RecurringSummaryCard />
+        <LegalCard />
       </div>
 
       <div className="mt-6">
