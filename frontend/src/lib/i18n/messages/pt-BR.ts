@@ -485,9 +485,9 @@ export const ptBR: Messages = {
 
   auth: {
     login: {
-      heroTitle: "Cada real,\nna ponta do lápis.",
+      heroTitle: "A conta fecha,\ntoda vez.",
       heroText:
-        "Categorias com os nomes que você escolhe, os cartões que você usa de verdade e um mês que finalmente fecha.",
+        "Categorias com os nomes que você escolhe, os cartões que você usa de verdade e cada real na ponta do lápis.",
       privateByDefault: "Privado por padrão",
       noBankLinking: "Sem conexão com o banco",
       title: "Entrar",

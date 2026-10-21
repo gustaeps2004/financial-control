@@ -496,9 +496,9 @@ export const en = {
 
   auth: {
     login: {
-      heroTitle: "Every real,\naccounted for.",
+      heroTitle: "Close the month,\nskip the mess.",
       heroText:
-        "Categories you name yourself, the cards you actually carry, and a month that finally adds up.",
+        "Categories you name yourself, the cards you actually carry, and every real accounted for.",
       privateByDefault: "Private by default",
       noBankLinking: "No bank linking",
       title: "Sign in",

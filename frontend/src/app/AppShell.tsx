@@ -59,7 +59,7 @@ export function AppShell() {
     <div className="flex min-h-screen flex-col md:flex-row">
       <aside className="flex flex-none flex-col gap-2.5 bg-sidebar p-3 md:sticky md:top-0 md:h-screen md:w-50 md:gap-5">
         <div className="flex items-center justify-between gap-3">
-          <div className="px-2 py-0.5 text-[17px] font-semibold">Tally</div>
+          <div className="px-2 py-0.5 text-[17px] font-semibold">Fecha Mês</div>
           <UserChip className="flex max-w-[60%] md:hidden" />
         </div>
 

@@ -18,7 +18,7 @@ export function AuthLayout({ hero, children }: AuthLayoutProps) {
         }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-[19px] leading-none font-semibold tracking-[-0.01em]">Tally</div>
+          <div className="text-[19px] leading-none font-semibold tracking-[-0.01em]">Fecha Mês</div>
           <LanguageSwitcher />
         </div>
         {hero}
